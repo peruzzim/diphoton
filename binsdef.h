@@ -13,7 +13,7 @@
 const int year = 2011;
 
 const float additional_cut_jet_pt = 25;
-const float additional_cut_jet_eta = 2.5;
+const float additional_cut_jet_eta = 4.7;
 
 const float Pi = TMath::Pi();
 const float MaxDrExperiment = sqrt(pow(5.,2)+pow(Pi,2)); // = 5.90

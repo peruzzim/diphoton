@@ -1175,7 +1175,7 @@ void template_production_class::FillDiffVariables(bool dogen){ // WARNING: THIS 
   if (!dogen){
     pho1.SetPtEtaPhiM(pholead_pt,pholead_eta,pholead_phi,0);
     pho2.SetPtEtaPhiM(photrail_pt,photrail_eta,photrail_phi,0);
-    for (int i=0; i<n_jets; i++) if (jet_pt[i]>additional_cut_jet_pt && fabs(jet_eta[i])>additional_cut_jet_eta) {
+    for (int i=0; i<n_jets; i++) if (jet_pt[i]>additional_cut_jet_pt && fabs(jet_eta[i])<additional_cut_jet_eta) {
 	TLorentzVector a;
 	a.SetPtEtaPhiE(jet_pt[i],jet_eta[i],jet_phi[i],jet_energy[i]);
 	myjets.push_back(a);
@@ -1184,7 +1184,7 @@ void template_production_class::FillDiffVariables(bool dogen){ // WARNING: THIS 
   else{
     pho1.SetPtEtaPhiM(pholead_GEN_pt,pholead_GEN_eta,pholead_GEN_phi,0);
     pho2.SetPtEtaPhiM(photrail_GEN_pt,photrail_GEN_eta,photrail_GEN_phi,0);
-    for (int i=0; i<n_GEN_jets; i++) if (jet_GEN_pt[i]>additional_cut_jet_pt && fabs(jet_GEN_eta[i])>additional_cut_jet_eta) {
+    for (int i=0; i<n_GEN_jets; i++) if (jet_GEN_pt[i]>additional_cut_jet_pt && fabs(jet_GEN_eta[i])<additional_cut_jet_eta) {
 	TLorentzVector a;
 	a.SetPtEtaPhiE(jet_GEN_pt[i],jet_GEN_eta[i],jet_GEN_phi[i],jet_GEN_energy[i]);
 	myjets.push_back(a);
