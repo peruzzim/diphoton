@@ -225,19 +225,16 @@ int n_eta1eta2_cats = n_eta_cats*n_eta_cats;
 float *etabins = binsdef_single_gamma_EB_eta+0;
 
 // FOR PHOTON COMPONENT
-//// 030903p1 2011 dataset
-float eff_areas_2011_EB_data[n_bins] = {2.703034e-01,2.678859e-01,2.722684e-01,2.720999e-01,2.643882e-01,2.480913e-01,1.706292e-01};
-float eff_areas_2011_EE_data[n_bins] = {5.329403e-02,7.733851e-02,1.091783e-01,1.339074e-01,1.068975e-01};
-float eff_areas_2011_EB_mc[n_bins] = {2.840231e-01,2.859291e-01,2.825974e-01,2.930248e-01,2.766801e-01,2.567621e-01,1.797386e-01};
-float eff_areas_2011_EE_mc[n_bins] = {5.101126e-02,7.539486e-02,1.088317e-01,1.385660e-01,1.077761e-01};
+//// 141106 isogeomcorr 2011 dataset
+float eff_areas_2011_EB_data[n_bins] = {2.702002e-01,2.673223e-01,2.728371e-01,2.729942e-01,2.636837e-01,2.584146e-01,2.477205e-01};
+float eff_areas_2011_EE_data[n_bins] = {9.365424e-02,1.038626e-01,1.151461e-01,1.360073e-01,1.505984e-01};
+float eff_areas_2011_EB_mc[n_bins] = {2.833457e-01,2.845531e-01,2.808987e-01,2.923445e-01,2.745629e-01,2.683890e-01,2.601354e-01};
+float eff_areas_2011_EE_mc[n_bins] = {8.709669e-02,9.960267e-02,1.143532e-01,1.409505e-01,1.516455e-01};
 
-// // 030903p1 2012 dataset
-float eff_areas_2012_EB_mc[n_bins] = {3.179052e-01,3.197031e-01,3.247611e-01,3.321966e-01,3.141441e-01,2.940985e-01,2.045474e-01};
-//float eff_areas_2012_EE_mc[n_bins] = {5.937695e-02,7.733278e-02, 1.045831e-01, 1.181389e-01,8.926588e-02}; // from RCONE (20/10)
-float eff_areas_2012_EE_mc[n_bins] = {8.139125e-02,9.082052e-02,1.154536e-01,1.104731e-01,1.138371e-01}; // from RCONE 30/20
-//float eff_areas_2012_EE_mc[n_bins] = {5.803540e-02,7.682259e-02,1.345579e-01,1.750729e-01,1.299488e-01}; // from SIG
-float eff_areas_2012_EB_data[n_bins] = {3.070820e-01,3.078518e-01,3.089162e-01,3.103081e-01,3.048204e-01,2.865540e-01,1.999668e-01};
-float eff_areas_2012_EE_data[n_bins] = {5.330422e-02,7.396740e-02,9.679689e-02,1.125413e-01,8.631587e-02};
+float eff_areas_2012_EB_mc[n_bins] = {0};
+float eff_areas_2012_EE_mc[n_bins] = {0};
+float eff_areas_2012_EB_data[n_bins] = {0};
+float eff_areas_2012_EE_data[n_bins] = {0};
 
 float *eff_areas_EB_data = (year==2011) ? eff_areas_2011_EB_data+0 : eff_areas_2012_EB_data+0;
 float *eff_areas_EE_data = (year==2011) ? eff_areas_2011_EE_data+0 : eff_areas_2012_EE_data+0;

@@ -11,19 +11,19 @@ args = parser.parse_args()
 ##################################################################
 
 if (args.what=='data'):
-    file='./gg_minitree_data_030903p1_17jun14/Photon-Run2011AB-21Jun2013-v1-AOD.root'
+    file='./gg_minitree_data_141106_step1_isogeomcorr/data_step1_141106_isogeomcorr.root'
     modes=['sigsig','sigbkg','bkgbkg','standard','randomcone','sieiesideband','zee']
     activate12events=False
     isdata=1
     number=-1
 elif (args.what=='mc'):
-    file='./gg_minitree_mc_030903p1_17jun14/allmc.root'
+    file='./gg_minitree_mc_141106_step1_isogeomcorr/allmc.root'
     modes=['signal','randomcone','background','sieiesideband','sigsig','sigbkg','bkgbkg','standard','2pgen','2fgen','1p1fbothgen','1pgen1fside','1prcone1fgen','fragmentation','nofragmentation']
     activate12events=False
     isdata=0
     number=-1
 elif (args.what=='data_step2'):
-    file='./gg_minitree_data_030903p1_17jun14_step2/Photon-Run2011AB-21Jun2013-v1-AOD-step2.root'
+    file='./gg_minitree_data_141106_step2_isogeomcorr/data_step2_141106_isogeomcorr.root'
     modes=['standard_newtemplates_sigsig','standard_newtemplates_sigbkg','standard_newtemplates_bkgbkg']
     activate12events=True
     isdata=1
@@ -34,7 +34,7 @@ else:
 
 ##################################################################
 
-spawn=4
+spawn=8
 lista_processi=[]
 
 
