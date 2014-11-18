@@ -9,20 +9,20 @@ isdata=[]
 # DO NOT CHANGE THE ORDER OF WHAT FOLLOWS
 
 # DATA (do not swap with mc)
-file.append('./gg_minitree_data_030903p1_17jun14/Photon-Run2011AB-21Jun2013-v1-AOD.root')
+file.append('./gg_minitree_data_141106_step1_isogeomcorr/data_step1_141106_isogeomcorr.root')
 modes.append(['Default','ESCALEup','ESCALEdown','JECup','JECdown'])
 isdata.append(1)
 
 # MC (do not swap with data)
-file.append('./gg_minitree_mc_030903p1_17jun14_lightforPU/sig.root')
+file.append('./gg_minitree_mc_141106_step1_isogeomcorr/allmc.root')
 modes.append(['Default','ESMEARup','ESMEARdown','JERup','JERdown'])
 isdata.append(0)
 
 # MC pileup rew up/down
-file.append('./gg_minitree_mc_030903p1_17jun14_lightforPU_UPvar/sig.root')
+file.append('./gg_minitree_mc_141106_light_isogeomcorr_pileupvar/DiPhotonJetsBox-Pt-32-20-dR-0p4-sherpa-UPvar.root')
 modes.append(['Default'])
 isdata.append(0)
-file.append('./gg_minitree_mc_030903p1_17jun14_lightforPU_DOWNvar/sig.root')
+file.append('./gg_minitree_mc_141106_light_isogeomcorr_pileupvar/DiPhotonJetsBox-Pt-32-20-dR-0p4-sherpa-DOWNvar.root')
 modes.append(['Default'])
 isdata.append(0)
 

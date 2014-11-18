@@ -315,6 +315,7 @@ std::vector<systematics_element> systematics_list = syst_handler.store;
 const float intlumi = (year==2011) ? 5.044 : -1; 
 const float threshold_for_using_2events = 0.1;
 
-const double sig_contamination_in_templates[4] = {0.0112849725855,0.00762673817169,0.0240342301152,0.0369749508964};
+// 141106 data 2011
+const double sig_contamination_in_templates[4] = {0.0126169037656,0.00732447623341,0.0259272520766,0.0342954299515};
 
 #endif
