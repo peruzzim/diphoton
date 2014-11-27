@@ -199,83 +199,83 @@ fit_output* fit_dataset(TString diffvariable, TString splitting, int bin, const 
   TString inputfilename_d;
 
   if (do_syst_string=="savepdfMCtrue2D" ||  do_syst_string=="doMCtrue"){
-    inputfilename_t2p   = "outphoton_allmc_2pgen.root";
-    inputfilename_t1p1f = "outphoton_allmc_1p1fbothgen.root";
-    inputfilename_t2f   = "outphoton_allmc_2fgen.root";
-    inputfilename_d     = "outphoton_allmc_standard.root";
+    inputfilename_t2p   = "outphoton/outphoton_allmc_2pgen.root";
+    inputfilename_t1p1f = "outphoton/outphoton_allmc_1p1fbothgen.root";
+    inputfilename_t2f   = "outphoton/outphoton_allmc_2fgen.root";
+    inputfilename_d     = "outphoton/outphoton_allmc_standard.root";
   }
   else if (do_syst_string=="doMCtrue_2frag"){
-    inputfilename_t2p   = "outphoton_allmc_2pgen.root";
-    inputfilename_t1p1f = "outphoton_allmc_1p1fbothgen.root";
-    inputfilename_t2f   = "outphoton_allmc_2fgen.root";
-    inputfilename_d     = "outphoton_allmc_standard_2frag.root";
+    inputfilename_t2p   = "outphoton/outphoton_allmc_2pgen.root";
+    inputfilename_t1p1f = "outphoton/outphoton_allmc_1p1fbothgen.root";
+    inputfilename_t2f   = "outphoton/outphoton_allmc_2fgen.root";
+    inputfilename_d     = "outphoton/outphoton_allmc_standard_2frag.root";
   }
   else if (do_syst_string=="savepdfMCtrue1D" || do_syst_string=="templateshape2frag"){
-    inputfilename_t2p   = "outphoton_allmc_2pgen.root";
-    inputfilename_t1p1f = "outphoton_allmc_1p1fbothgen.root";
-    inputfilename_t2f   = "outphoton_allmc_2fgen.root";
-    inputfilename_d     = "outphoton_data_standard.root";
+    inputfilename_t2p   = "outphoton/outphoton_allmc_2pgen.root";
+    inputfilename_t1p1f = "outphoton/outphoton_allmc_1p1fbothgen.root";
+    inputfilename_t2f   = "outphoton/outphoton_allmc_2fgen.root";
+    inputfilename_d     = "outphoton/outphoton_data_standard.root";
   }
   else if (do_syst_string=="doMCpromptdriven"){
-    inputfilename_t2p   = "outphoton_allmc_sigsig.root";
-    inputfilename_t1p1f = "outphoton_allmc_1prcone1fgen.root";
-    inputfilename_t2f   = "outphoton_allmc_2fgen.root";
-    inputfilename_d     = "outphoton_allmc_standard.root";
+    inputfilename_t2p   = "outphoton/outphoton_allmc_sigsig.root";
+    inputfilename_t1p1f = "outphoton/outphoton_allmc_1prcone1fgen.root";
+    inputfilename_t2f   = "outphoton/outphoton_allmc_2fgen.root";
+    inputfilename_d     = "outphoton/outphoton_allmc_standard.root";
   }
   else if (do_syst_string=="templateshapeMCpromptdrivenEB" || do_syst_string=="templateshapeMCpromptdrivenEE"){
-    inputfilename_t2p   = "outphoton_allmc_sigsig.root";
-    inputfilename_t1p1f = "outphoton_allmc_1prcone1fgen.root";
-    inputfilename_t2f   = "outphoton_allmc_2fgen.root";
-    inputfilename_d     = "outphoton_data_standard.root";
+    inputfilename_t2p   = "outphoton/outphoton_allmc_sigsig.root";
+    inputfilename_t1p1f = "outphoton/outphoton_allmc_1prcone1fgen.root";
+    inputfilename_t2f   = "outphoton/outphoton_allmc_2fgen.root";
+    inputfilename_d     = "outphoton/outphoton_data_standard.root";
   }
   else if (do_syst_string=="doMCfakedriven"){
-    inputfilename_t2p   = "outphoton_allmc_2pgen.root";
-    inputfilename_t1p1f = "outphoton_allmc_1pgen1fside.root";
-    inputfilename_t2f   = "outphoton_allmc_bkgbkg.root";
-    inputfilename_d     = "outphoton_allmc_standard.root";
+    inputfilename_t2p   = "outphoton/outphoton_allmc_2pgen.root";
+    inputfilename_t1p1f = "outphoton/outphoton_allmc_1pgen1fside.root";
+    inputfilename_t2f   = "outphoton/outphoton_allmc_bkgbkg.root";
+    inputfilename_d     = "outphoton/outphoton_allmc_standard.root";
   }
   else if (do_syst_string=="templateshapeMCfakedrivenEB" || do_syst_string=="templateshapeMCfakedrivenEE"){
-    inputfilename_t2p   = "outphoton_allmc_2pgen.root";
-    inputfilename_t1p1f = "outphoton_allmc_1pgen1fside.root";
-    inputfilename_t2f   = "outphoton_allmc_bkgbkg.root";
-    inputfilename_d     = "outphoton_data_standard.root";
+    inputfilename_t2p   = "outphoton/outphoton_allmc_2pgen.root";
+    inputfilename_t1p1f = "outphoton/outphoton_allmc_1pgen1fside.root";
+    inputfilename_t2f   = "outphoton/outphoton_allmc_bkgbkg.root";
+    inputfilename_d     = "outphoton/outphoton_data_standard.root";
   }
   else if (do_syst_string=="subtractionZee"){
-    inputfilename_t2p   = "outphoton_allmc_2pgen.root";
-    inputfilename_t1p1f = "outphoton_allmc_1p1fbothgen.root";
-    inputfilename_t2f   = "outphoton_allmc_2fgen.root";
-    inputfilename_d     = "outphoton_allmc_standard.root";
+    inputfilename_t2p   = "outphoton/outphoton_allmc_2pgen.root";
+    inputfilename_t1p1f = "outphoton/outphoton_allmc_1p1fbothgen.root";
+    inputfilename_t2f   = "outphoton/outphoton_allmc_2fgen.root";
+    inputfilename_d     = "outphoton/outphoton_allmc_standard.root";
   }  
   else if (do_syst_string=="doMCfulldriven") {
-    inputfilename_t2p   = "outphoton_allmc_sigsig.root";
-    inputfilename_t1p1f = "outphoton_allmc_sigbkg.root";
-    inputfilename_t2f   = "outphoton_allmc_bkgbkg.root";
-    inputfilename_d     = "outphoton_allmc_standard.root";
+    inputfilename_t2p   = "outphoton/outphoton_allmc_sigsig.root";
+    inputfilename_t1p1f = "outphoton/outphoton_allmc_sigbkg.root";
+    inputfilename_t2f   = "outphoton/outphoton_allmc_bkgbkg.root";
+    inputfilename_d     = "outphoton/outphoton_allmc_standard.root";
   }  
   else if (do_syst_string=="newtemplates_1event") {
-    inputfilename_t2p   = "outphoton_data_standard_newtemplates_sigsig_step2_1event.root";
-    inputfilename_t1p1f = "outphoton_data_standard_newtemplates_sigbkg_step2_1event.root";
-    inputfilename_t2f   = "outphoton_data_standard_newtemplates_bkgbkg_step2_1event.root";
-    inputfilename_d     = "outphoton_data_standard.root";
+    inputfilename_t2p   = "outphoton/outphoton_data_standard_newtemplates_sigsig_step2_1event.root";
+    inputfilename_t1p1f = "outphoton/outphoton_data_standard_newtemplates_sigbkg_step2_1event.root";
+    inputfilename_t2f   = "outphoton/outphoton_data_standard_newtemplates_bkgbkg_step2_1event.root";
+    inputfilename_d     = "outphoton/outphoton_data_standard.root";
   }  
   else if (do_syst_string=="newtemplates_2events") {
-    inputfilename_t2p   = "outphoton_data_standard_newtemplates_sigsig_step2_2events.root";
-    inputfilename_t1p1f = "outphoton_data_standard_newtemplates_sigbkg_step2_2events.root";
-    inputfilename_t2f   = "outphoton_data_standard_newtemplates_bkgbkg_step2_2events.root";
-    inputfilename_d     = "outphoton_data_standard.root";
+    inputfilename_t2p   = "outphoton/outphoton_data_standard_newtemplates_sigsig_step2_2events.root";
+    inputfilename_t1p1f = "outphoton/outphoton_data_standard_newtemplates_sigbkg_step2_2events.root";
+    inputfilename_t2f   = "outphoton/outphoton_data_standard_newtemplates_bkgbkg_step2_2events.root";
+    inputfilename_d     = "outphoton/outphoton_data_standard.root";
   }  
   else if (do_syst_string=="oldtemplates"){
-    inputfilename_t2p   = "outphoton_data_sigsig.root";
-    inputfilename_t1p1f = "outphoton_data_sigbkg.root";
-    inputfilename_t2f   = "outphoton_data_bkgbkg.root";
-    inputfilename_d     = "outphoton_data_standard.root";
+    inputfilename_t2p   = "outphoton/outphoton_data_sigsig.root";
+    inputfilename_t1p1f = "outphoton/outphoton_data_sigbkg.root";
+    inputfilename_t2f   = "outphoton/outphoton_data_bkgbkg.root";
+    inputfilename_d     = "outphoton/outphoton_data_standard.root";
   }  
   else {
-    inputfilename_d     = "outphoton_data_standard.root";
-    inputfilename_t2p   = "outphoton_data_standard_newtemplates_sigsig_1event.root";
-    inputfilename_t1p1f = "outphoton_data_standard_newtemplates_sigbkg_1event.root";
+    inputfilename_d     = "outphoton/outphoton_data_standard.root";
+    inputfilename_t2p   = "outphoton/outphoton_data_standard_newtemplates_sigsig_1event.root";
+    inputfilename_t1p1f = "outphoton/outphoton_data_standard_newtemplates_sigbkg_1event.root";
     bool is2ev = is_2events_bin(inputfilename_d,diffvariable,splitting,bin);
-    inputfilename_t2f = (is2ev) ? "outphoton_data_standard_newtemplates_bkgbkg_2events.root" : "outphoton_data_standard_newtemplates_bkgbkg_1event.root";
+    inputfilename_t2f = (is2ev) ? "outphoton/outphoton_data_standard_newtemplates_bkgbkg_2events.root" : "outphoton/outphoton_data_standard_newtemplates_bkgbkg_1event.root";
   }  
 
   if ((!inputfile_t2p)   ||  (TString(inputfile_t2p->GetName())   != TString(inputfilename_t2p)  )) {inputfile_t2p = TFile::Open(inputfilename_t2p);     dir_t2p=NULL;  }
@@ -494,33 +494,33 @@ fit_output* fit_dataset(TString diffvariable, TString splitting, int bin, const 
 
     if (dolightcomparisonwithstandardselsig || dolightcomparisonwithstandardselbkg) if (splitting=="EBEE") return NULL;
 
-    TFile *fdatarcone_s = new TFile("outphoton_data_randomcone.root","read");
+    TFile *fdatarcone_s = new TFile("outphoton/outphoton_data_randomcone.root","read");
     get_roodset_from_ttree(fdatarcone_s,Form("roofit/roodset_signal_%s_rv1",s1.Data()),dset_datarcone_s);
  
-    TFile *fdatarcone_b = new TFile("outphoton_data_sieiesideband.root","read");
+    TFile *fdatarcone_b = new TFile("outphoton/outphoton_data_sieiesideband.root","read");
     get_roodset_from_ttree(fdatarcone_b,Form("roofit/roodset_background_%s_rv1",s1.Data()),dset_datarcone_b);
 
-    TFile *fmctrue_s = new TFile("outphoton_allmc_signal.root","read");
+    TFile *fmctrue_s = new TFile("outphoton/outphoton_allmc_signal.root","read");
     get_roodset_from_ttree(fmctrue_s,Form("roofit/roodset_signal_%s_rv1",s1.Data()),dset_mctrue_s);
 
-    TFile *fmcfrag_s = new TFile("outphoton_allmc_fragmentation.root","read");
+    TFile *fmcfrag_s = new TFile("outphoton/outphoton_allmc_fragmentation.root","read");
     get_roodset_from_ttree(fmcfrag_s,Form("roofit/roodset_signal_%s_rv1",s1.Data()),dset_mcfrag_s);
   
-    TFile *fmcnofrag_s = new TFile("outphoton_allmc_nofragmentation.root","read");
+    TFile *fmcnofrag_s = new TFile("outphoton/outphoton_allmc_nofragmentation.root","read");
     get_roodset_from_ttree(fmcnofrag_s,Form("roofit/roodset_signal_%s_rv1",s1.Data()),dset_mcnofrag_s);
   
-    TFile *fmcrcone_s = new TFile("outphoton_allmc_randomcone.root","read");
+    TFile *fmcrcone_s = new TFile("outphoton/outphoton_allmc_randomcone.root","read");
     get_roodset_from_ttree(fmcrcone_s,Form("roofit/roodset_signal_%s_rv1",s1.Data()),dset_mcrcone_s);
   
-    TFile *fzee_s = new TFile("outphoton_data_zee.root","read");
+    TFile *fzee_s = new TFile("outphoton/outphoton_data_zee.root","read");
     RooDataSet *dset_zee_s_2d = NULL;
     get_roodset_from_ttree(fzee_s,Form("roofit/template_roodset_%s_sigsig",splitting.Data()),dset_zee_s_2d);
     if (dset_zee_s) dset_zee_s = (RooDataSet*)(dset_zee_s_2d->reduce(Name("dset_zee_s"),SelectVars(RooArgList(*roovar1,*roopt1,*roosieie1,*rooeta1,*roorho,*roosigma,*roonvtx))));
 
-    TFile *fmctrue_b = new TFile("outphoton_allmc_background.root","read");
+    TFile *fmctrue_b = new TFile("outphoton/outphoton_allmc_background.root","read");
     get_roodset_from_ttree(fmctrue_b,Form("roofit/roodset_background_%s_rv1",s1.Data()),dset_mctrue_b);
 
-    TFile *fmcrcone_b = new TFile("outphoton_allmc_sieiesideband.root","read");
+    TFile *fmcrcone_b = new TFile("outphoton/outphoton_allmc_sieiesideband.root","read");
     get_roodset_from_ttree(fmcrcone_b,Form("roofit/roodset_background_%s_rv1",s1.Data()),dset_mcrcone_b);
 
 
@@ -795,30 +795,30 @@ fit_output* fit_dataset(TString diffvariable, TString splitting, int bin, const 
 
   if (do_syst_string==TString("savepdfMCtrue1D") || do_syst_string==TString("templateshapeMCpromptdrivenEB") || do_syst_string==TString("templateshapeMCfakedrivenEB") || do_syst_string==TString("templateshapeMCpromptdrivenEE") || do_syst_string==TString("templateshapeMCfakedrivenEE") || do_syst_string==TString("templateshape2frag")) {
 
-    TFile *fmctrue_s = new TFile("outphoton_allmc_signal.root","read");
+    TFile *fmctrue_s = new TFile("outphoton/outphoton_allmc_signal.root","read");
     get_roodset_from_ttree(fmctrue_s,Form("roofit/roodset_signal_%s_rv1",s1.Data()),dset_mctrue_s_rv1);
     get_roodset_from_ttree(fmctrue_s,Form("roofit/roodset_signal_%s_rv2",s2.Data()),dset_mctrue_s_rv2);
     assert(dset_mctrue_s_rv1);
     assert(dset_mctrue_s_rv2);
     TFile *fmcrcone_s;
     if (do_syst_string==TString("templateshape2frag")){
-      fmcrcone_s = new TFile("outphoton_allmc_sig_2frag.root","read");
+      fmcrcone_s = new TFile("outphoton/outphoton_allmc_sig_2frag.root","read");
       get_roodset_from_ttree(fmcrcone_s,Form("roofit/roodset_signal_%s_rv1",s1.Data()),dset_mcrcone_s_rv1);
       get_roodset_from_ttree(fmcrcone_s,Form("roofit/roodset_signal_%s_rv2",s2.Data()),dset_mcrcone_s_rv2);
     }
     else {
-      fmcrcone_s = new TFile("outphoton_allmc_randomcone.root","read");
+      fmcrcone_s = new TFile("outphoton/outphoton_allmc_randomcone.root","read");
       get_roodset_from_ttree(fmcrcone_s,Form("roofit/roodset_signal_%s_rv1",s1.Data()),dset_mcrcone_s_rv1);
       get_roodset_from_ttree(fmcrcone_s,Form("roofit/roodset_signal_%s_rv2",s2.Data()),dset_mcrcone_s_rv2);
     }
     assert(dset_mcrcone_s_rv1);
     assert(dset_mcrcone_s_rv2);
-    TFile *fmctrue_b = new TFile("outphoton_allmc_background.root","read");
+    TFile *fmctrue_b = new TFile("outphoton/outphoton_allmc_background.root","read");
     get_roodset_from_ttree(fmctrue_b,Form("roofit/roodset_background_%s_rv1",s1.Data()),dset_mctrue_b_rv1);
     get_roodset_from_ttree(fmctrue_b,Form("roofit/roodset_background_%s_rv2",s2.Data()),dset_mctrue_b_rv2);
     assert(dset_mctrue_b_rv1);
     assert(dset_mctrue_b_rv2);
-    TFile *fmcrcone_b = new TFile("outphoton_allmc_sieiesideband.root","read");
+    TFile *fmcrcone_b = new TFile("outphoton/outphoton_allmc_sieiesideband.root","read");
     get_roodset_from_ttree(fmcrcone_b,Form("roofit/roodset_background_%s_rv1",s1.Data()),dset_mcrcone_b_rv1);
     get_roodset_from_ttree(fmcrcone_b,Form("roofit/roodset_background_%s_rv2",s2.Data()),dset_mcrcone_b_rv2);
     assert(dset_mcrcone_b_rv1);
@@ -2370,7 +2370,7 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
     TFile *file_zee_subtraction = NULL;
     const bool do_zee_subtraction = true;
     if (do_zee_subtraction){
-      file_zee_subtraction = new TFile("outphoton_effunf_dy_DiElectron.root");
+      file_zee_subtraction = new TFile("outphoton/outphoton_effunf_dy_DiElectron.root");
       TH1F *hist = NULL;
       file_zee_subtraction->GetObject(Form("effunf/histo_zee_yieldtosubtract_%s_%s",diffvariable.Data(),splitting.Data()),hist);
       for (int bin=0; bin<bins_to_run; bin++){
@@ -2416,7 +2416,7 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
 
     RooUnfoldResponse *responsematrix_centralvalue=NULL;
     { //--- construct central response matrix
-      TFile *effunf_file = new TFile("outphoton_effunf_sig_Default.root");
+      TFile *effunf_file = new TFile("outphoton/outphoton_effunf_sig_Default.root");
       effunf_file->GetObject(Form("effunf/responsematrix_effunf_%s_%s",splitting.Data(),diffvariable.Data()),responsematrix_centralvalue);
       cout << Form("responsematrix_effunf_%s_%s",splitting.Data(),diffvariable.Data()) << endl;
       assert (responsematrix_centralvalue!=NULL);
@@ -2476,7 +2476,7 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
       }
       TFile *file_bias_templateshape2frag = new TFile(Form("plots/histo_bias_templateshape2frag_%s_%s_allbins.root",diffvariable.Data(),splitting.Data()));
       file_bias_templateshape2frag->GetObject("histo_bias_templateshape2frag",histo_bias_templateshape2frag);
-      name_file_for2events_decision = "outphoton_data_standard.root";
+      name_file_for2events_decision = "outphoton/outphoton_data_standard.root";
       TFile *file_JECup = new TFile("plots/ratiosyst_JECup.root");
       file_JECup->GetObject(Form("hreco_%s_%s_ratiosyst",diffvariable.Data(),splitting.Data()),histo_JECup);
       assert(histo_JECup);
@@ -2609,7 +2609,7 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
       if (skipsystematics) unfolded = (TH1F*)(ngg_centralvalue->Clone("unfolded"));
       else {
 	RooUnfoldResponse *responsematrix_syst=NULL;
-	TFile *effunf_file = new TFile(Form("outphoton_effunf_sig_%s.root",syst.name.Data()));
+	TFile *effunf_file = new TFile(Form("outphoton/outphoton_effunf_sig_%s.root",syst.name.Data()));
 	effunf_file->GetObject(Form("effunf/responsematrix_effunf_%s_%s",splitting.Data(),diffvariable.Data()),responsematrix_syst);
 	assert (responsematrix_syst!=NULL);
 	unfolded = run_unfolding(responsematrix_syst,ngg_centralvalue_raw);
