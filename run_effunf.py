@@ -60,7 +60,7 @@ for i in xrange(4):
             tag='PUup'
         if (i==3):
             tag='PUdown'
-        args = ['root','-q','-b','-l','template_production.C+O("'+file[i]+'","effunf",'+str(isdata[i])+',"outphoton_effunf_'+strdata+'_'+tag+'.root","photoniso",'+str(thisnumber)+',false,"","'+mode+'");']
+        args = ['root','-q','-b','-l','template_production.C+O("'+file[i]+'","effunf",'+str(isdata[i])+',"outphoton/outphoton_effunf_'+strdata+'_'+tag+'.root","photoniso",'+str(thisnumber)+',false,"","'+mode+'");']
         #    print 'Running root'+args
         lista_processi.append(Popen(args))
             
