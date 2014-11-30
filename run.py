@@ -63,14 +63,14 @@ for mode in modes:
     if (mode.rfind('randomcone')>=0):
         thisnumber=1e6
     if (activate12events):
-        args = ['root','-q','-b','-l','template_production.C+O("'+file+'","'+mode+'",'+str(isdata)+',"outphoton_'+strdata+'_'+mode+'_1event.root","photoniso",'+str(thisnumber)+',false);']
+        args = ['root','-q','-b','-l','template_production.C+O("'+file+'","'+mode+'",'+str(isdata)+',"outphoton/outphoton_'+strdata+'_'+mode+'_1event.root","photoniso",'+str(thisnumber)+',false);']
         lista_processi.append(Popen(args))
         if (mode=='standard_newtemplates_bkgbkg'):
             wait_processes()
-            args = ['root','-q','-b','-l','template_production.C+O("'+file+'","'+mode+'",'+str(isdata)+',"outphoton_'+strdata+'_'+mode+'_2events.root","photoniso",'+str(thisnumber)+',true);']
+            args = ['root','-q','-b','-l','template_production.C+O("'+file+'","'+mode+'",'+str(isdata)+',"outphoton/outphoton_'+strdata+'_'+mode+'_2events.root","photoniso",'+str(thisnumber)+',true);']
             lista_processi.append(Popen(args))
     else:
-        args = ['root','-q','-b','-l','template_production.C+O("'+file+'","'+mode+'",'+str(isdata)+',"outphoton_'+strdata+'_'+mode+'.root","photoniso",'+str(thisnumber)+');']
+        args = ['root','-q','-b','-l','template_production.C+O("'+file+'","'+mode+'",'+str(isdata)+',"outphoton/outphoton_'+strdata+'_'+mode+'.root","photoniso",'+str(thisnumber)+');']
         lista_processi.append(Popen(args))
 
 for i in lista_processi:

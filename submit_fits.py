@@ -26,7 +26,7 @@ lista_vars=[
 ]
 
 
-lista_nbins=[16,25,13,26,22,5,9,13,14,14,13,5,3,5,5,5,5,5,5]
+lista_nbins=[16,21,8,14,22,5,9,13,14,14,13,5,3,5,5,5,5,5,5]
 
 option='' # default
 #option='newtemplates_1event'

@@ -611,7 +611,8 @@ fit_output* fit_dataset(TString diffvariable, TString splitting, int bin, const 
     str_dataset_axis1.color = kGreen;
     plot_dataset_struct str_dataset_sig_axis1;
     str_dataset_sig_axis1.dset = dataset_sig_axis1;
-    str_dataset_sig_axis1.legend = "New signal template with matching";
+    str_dataset_sig_axis1.legend = "Data";
+    //    str_dataset_sig_axis1.legend = "New signal template with matching";
     //    str_dataset_sig_axis1.legend = "New signal template from evt. mixing";
     //    str_dataset_sig_axis1.legend = "Old signal template";
     str_dataset_sig_axis1.color = kBlack;
@@ -648,7 +649,8 @@ fit_output* fit_dataset(TString diffvariable, TString splitting, int bin, const 
 
     plot_dataset_struct str_dataset_bkg_axis1;
     str_dataset_bkg_axis1.dset = dataset_bkg_axis1;
-    str_dataset_bkg_axis1.legend = "New background template with matching";
+    str_dataset_bkg_axis1.legend = "Data";
+    //    str_dataset_bkg_axis1.legend = "New background template with matching";
     //    str_dataset_bkg_axis1.legend = "New background template from evt. mixing";
     //    str_dataset_bkg_axis1.legend = "Old background template";
 
@@ -682,7 +684,7 @@ fit_output* fit_dataset(TString diffvariable, TString splitting, int bin, const 
       {
 	std::vector<plot_dataset_struct> vec;
 //	vec.push_back(str_dataset_axis1);
-//	vec.push_back(str_dataset_sig_axis1);
+	vec.push_back(str_dataset_sig_axis1);
 	vec.push_back(str_dset_mctrue_s);
 	vec.push_back(str_dset_mcrcone_s);
 	plot_datasets_axis1(vec,Form("plots/histo_template_sig_compwithsel_%s_log_%s_%s_b%d",s1.Data(),diffvariable.Data(),splitting.Data(),bin),Form("Signal template %s",s1.Data()));
@@ -694,7 +696,7 @@ fit_output* fit_dataset(TString diffvariable, TString splitting, int bin, const 
       {
 	std::vector<plot_dataset_struct> vec;
 //	vec.push_back(str_dataset_axis1);
-//	vec.push_back(str_dataset_bkg_axis1);
+	vec.push_back(str_dataset_bkg_axis1);
 	vec.push_back(str_dset_mctrue_b);
 	vec.push_back(str_dset_mcrcone_b);
 	plot_datasets_axis1(vec,Form("plots/histo_template_bkg_compwithsel_%s_log_%s_%s_b%d",s1.Data(),diffvariable.Data(),splitting.Data(),bin),Form("Background template %s",s1.Data()),false);
