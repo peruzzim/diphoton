@@ -538,7 +538,7 @@ void template_production_class::Setup(Bool_t _isdata, TString _mode, TString _di
       t2=Form("roodset_%s_%s_rv%d",name_signal.Data(),reg.Data(),2);
       roodset_signal[i][1] = new TTree(t2.Data(),t2.Data());
       AddVariablesToTree(roodset_signal[i][1],roovars_index2);
-      AddVariablesToTree(roodset_signal[i][0],roovars_common);
+      AddVariablesToTree(roodset_signal[i][1],roovars_common);
   }
 
   for (int i=0; i<2; i++){
