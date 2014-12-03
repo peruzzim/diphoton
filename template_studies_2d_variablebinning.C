@@ -880,7 +880,7 @@ fit_output* fit_dataset(TString diffvariable, TString splitting, int bin, const 
     
   }
 
-  bool islowstatcat = true;
+  bool islowstatcat = false;
   if (splitting=="EEEE") islowstatcat=true;
   if (diffvariable=="costhetastar" && splitting=="EEEE" && bin==1) islowstatcat=true;
   if (diffvariable=="costhetastar" && splitting=="EEEE" && bin>=4) islowstatcat=true;
@@ -888,7 +888,7 @@ fit_output* fit_dataset(TString diffvariable, TString splitting, int bin, const 
   if (diffvariable=="diphotonpt" && splitting=="EEEE" && bin>=16) islowstatcat=true;
   if (diffvariable=="diphotonpt" && splitting=="EEEE" && bin<=4) islowstatcat=true;
   if (diffvariable=="dR" && splitting=="EBEE" && bin==6) islowstatcat=true;
-  
+  if (!(diffvariable=="invmass" || diffvariable=="diphotonpt" || diffvariable=="costhetastar" || diffvariable=="dphi")) islowstatcat=true;
 
   find_adaptive_binning(dataset,&n_templatebins,templatebinsboundaries+0,1,islowstatcat ? -999 : -1);
 
@@ -4265,6 +4265,13 @@ void find_adaptive_binning(RooDataSet *dset, int *n_found_bins, Double_t *array_
     for (int i=0; i<6; i++) array_bounds[i] = templatebinsboundaries_reduced[i];
     return;
   }
+//  if (threshold<-100){
+//    std::cout << "APPLYING FIXED BIN NUMBER BOUND (4)" << std::endl;
+//    *n_found_bins=4;
+//    Double_t templatebinsboundaries_reduced[5] = {-3,-0.5,1,2,9};
+//    for (int i=0; i<5; i++) array_bounds[i] = templatebinsboundaries_reduced[i];
+//    return;
+//  }
 
   assert ((axis==1) || (axis==2));
   TString string = (axis==1) ? TString("roovar1") : TString("roovar2");
