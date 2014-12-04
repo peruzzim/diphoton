@@ -2470,24 +2470,29 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
     if (!skipsystematics){
       TFile *file_bias_purefitbias  = new TFile(Form("plots/histo_bias_purefitbias_%s_%s_allbins.root",diffvariable.Data(),splitting.Data()));
       file_bias_purefitbias->GetObject("histo_bias_purefitbias",histo_bias_purefitbias);
-      assert(histo_bias_purefitbias);
+      if (file_bias_purefitbias->IsZombie()) histo_bias_purefitbias=NULL;
       TFile *file_bias_templatestatistics  = new TFile(Form("plots/histo_bias_templatestatistics_%s_%s_allbins.root",diffvariable.Data(),splitting.Data()));
       file_bias_templatestatistics->GetObject("histo_bias_templatestatistics",histo_bias_templatestatistics);
-      assert(histo_bias_templatestatistics);
+      if (file_bias_templatestatistics->IsZombie()) histo_bias_templatestatistics=NULL;
       if (splitting!="EEEE"){
 	TFile *file_bias_templateshapepromptEB = new TFile(Form("plots/histo_bias_templateshapeMCpromptdrivenEB_%s_%s_allbins.root",diffvariable.Data(),splitting.Data()));
 	file_bias_templateshapepromptEB->GetObject("histo_bias_templateshapeMCpromptdrivenEB",histo_bias_templateshapeMCpromptdrivenEB);
+	if (file_bias_templateshapepromptEB->IsZombie()) histo_bias_templateshapeMCpromptdrivenEB=NULL;
 	TFile *file_bias_templateshapefakeEB = new TFile(Form("plots/histo_bias_templateshapeMCfakedrivenEB_%s_%s_allbins.root",diffvariable.Data(),splitting.Data()));
 	file_bias_templateshapefakeEB->GetObject("histo_bias_templateshapeMCfakedrivenEB",histo_bias_templateshapeMCfakedrivenEB);
+	if (file_bias_templateshapefakeEB->IsZombie()) histo_bias_templateshapeMCfakedrivenEB=NULL;
       }
       if (splitting!="EBEB"){
 	TFile *file_bias_templateshapepromptEE = new TFile(Form("plots/histo_bias_templateshapeMCpromptdrivenEE_%s_%s_allbins.root",diffvariable.Data(),splitting.Data()));
 	file_bias_templateshapepromptEE->GetObject("histo_bias_templateshapeMCpromptdrivenEE",histo_bias_templateshapeMCpromptdrivenEE);
+	if (file_bias_templateshapepromptEE->IsZombie()) histo_bias_templateshapeMCpromptdrivenEE=NULL;
 	TFile *file_bias_templateshapefakeEE = new TFile(Form("plots/histo_bias_templateshapeMCfakedrivenEE_%s_%s_allbins.root",diffvariable.Data(),splitting.Data()));
 	file_bias_templateshapefakeEE->GetObject("histo_bias_templateshapeMCfakedrivenEE",histo_bias_templateshapeMCfakedrivenEE);
+	if (file_bias_templateshapefakeEE->IsZombie()) histo_bias_templateshapeMCfakedrivenEE=NULL;
       }
       TFile *file_bias_templateshape2frag = new TFile(Form("plots/histo_bias_templateshape2frag_%s_%s_allbins.root",diffvariable.Data(),splitting.Data()));
       file_bias_templateshape2frag->GetObject("histo_bias_templateshape2frag",histo_bias_templateshape2frag);
+      if (file_bias_templateshape2frag->IsZombie()) histo_bias_templateshape2frag=NULL;
       name_file_for2events_decision = "outphoton/outphoton_data_standard.root";
       TFile *file_JECup = new TFile("plots/ratiosyst_JECup.root");
       file_JECup->GetObject(Form("hreco_%s_%s_ratiosyst",diffvariable.Data(),splitting.Data()),histo_JECup);
@@ -2524,25 +2529,27 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
       if (skipsystematics) histo_syst->Reset();
       else {
 
-	if (syst.name=="purefitbias"){
+	histo_syst->Reset();
+
+	if (syst.name=="purefitbias" && histo_bias_purefitbias){
 	  for (int bin=0; bin<bins_to_run; bin++) histo_syst->SetBinContent(bin+1,purity_fit_staterr->GetBinContent(bin+1)*histo_bias_purefitbias->GetBinContent(bin+1));
 	}
-	else if (syst.name=="templatestatistics"){
+	else if (syst.name=="templatestatistics" && histo_bias_templatestatistics){
 	  for (int bin=0; bin<bins_to_run; bin++) histo_syst->SetBinContent(bin+1,histo_bias_templatestatistics->GetBinContent(bin+1));
 	}
-	else if (syst.name=="templateshapeMCpromptdrivenEB"){
+	else if (syst.name=="templateshapeMCpromptdrivenEB" && histo_bias_templateshapeMCpromptdrivenEB){
 	  for (int bin=0; bin<bins_to_run; bin++) histo_syst->SetBinContent(bin+1,(!skipsystematics && splitting!="EEEE") ? fabs(histo_bias_templateshapeMCpromptdrivenEB->GetBinContent(bin+1)-1) : 0);
 	}
-	else if (syst.name=="templateshapeMCfakedrivenEB"){
+	else if (syst.name=="templateshapeMCfakedrivenEB" && histo_bias_templateshapeMCfakedrivenEB){
 	  for (int bin=0; bin<bins_to_run; bin++) histo_syst->SetBinContent(bin+1,(!skipsystematics && splitting!="EEEE") ? fabs(histo_bias_templateshapeMCfakedrivenEB->GetBinContent(bin+1)-1) : 0);
 	}
-	else if (syst.name=="templateshapeMCpromptdrivenEE"){
+	else if (syst.name=="templateshapeMCpromptdrivenEE" && histo_bias_templateshapeMCpromptdrivenEE){
 	  for (int bin=0; bin<bins_to_run; bin++) histo_syst->SetBinContent(bin+1,(!skipsystematics && splitting!="EBEB") ? fabs(histo_bias_templateshapeMCpromptdrivenEE->GetBinContent(bin+1)-1) : 0);
 	}
-	else if (syst.name=="templateshapeMCfakedrivenEE"){
+	else if (syst.name=="templateshapeMCfakedrivenEE" && histo_bias_templateshapeMCfakedrivenEE){
 	  for (int bin=0; bin<bins_to_run; bin++) histo_syst->SetBinContent(bin+1,(!skipsystematics && splitting!="EBEB") ? fabs(histo_bias_templateshapeMCfakedrivenEE->GetBinContent(bin+1)-1) : 0);
 	}
-	else if (syst.name=="templateshape2frag"){
+	else if (syst.name=="templateshape2frag" && histo_bias_templateshape2frag){
 	  for (int bin=0; bin<bins_to_run; bin++) histo_syst->SetBinContent(bin+1,(!skipsystematics) ? fabs(histo_bias_templateshape2frag->GetBinContent(bin+1)-1) : 0);
 	}
 	else if (syst.name=="noise_mixing"){
@@ -2552,7 +2559,7 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
 	  for (int bin=0; bin<bins_to_run; bin++) histo_syst->Reset();
 	  cout << "FIXME" << endl;
 	}
-	else if (syst.name=="JECup"){
+	else if (syst.name=="JECup" && histo_JECup && histo_JECdown){
 	  // THIS IS AN UGLY HACK
 	  //	  for (int bin=0; bin<bins_to_run; bin++) histo_syst->SetBinContent(bin+1,histo_JECup->GetBinContent(bin+1)-1);
 	  for (int bin=0; bin<bins_to_run; bin++) histo_syst->SetBinContent(bin+1,0.5*fabs(histo_JECup->GetBinContent(bin+1)-histo_JECdown->GetBinContent(bin+1)));
@@ -2561,7 +2568,7 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
 	  //	  for (int bin=0; bin<bins_to_run; bin++) histo_syst->SetBinContent(bin+1,histo_JECdown->GetBinContent(bin+1)-1);
 	  for (int bin=0; bin<bins_to_run; bin++) histo_syst->SetBinContent(bin+1,0);
 	}
-	else if (syst.name=="ESCALEup"){
+	else if (syst.name=="ESCALEup" && histo_ESCALEup && histo_ESCALEdown){
 	  //	  for (int bin=0; bin<bins_to_run; bin++) histo_syst->SetBinContent(bin+1,histo_ESCALEup->GetBinContent(bin+1)-1);
 	  for (int bin=0; bin<bins_to_run; bin++) histo_syst->SetBinContent(bin+1,0.5*fabs(histo_ESCALEup->GetBinContent(bin+1)-histo_ESCALEdown->GetBinContent(bin+1)));
 	}
@@ -2573,8 +2580,8 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
 	  for (int bin=0; bin<bins_to_run; bin++) histo_syst->SetBinContent(bin+1,ngg_centralvalue->GetBinError(bin+1)/ngg_centralvalue->GetBinContent(bin+1));
 	}
 	else {
-	  cout << syst.name.Data() << endl;
-	  assert(false);
+	  cout << syst.name.Data() << " skipped" << endl;
+	  //	  assert(false);
 	}
 	
       }
