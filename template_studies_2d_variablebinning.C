@@ -2,6 +2,8 @@ bool global_doplots = 0;
 bool doxcheckstemplates = 0;
 bool dolightcomparisonwithstandardselsig = 0;
 bool dolightcomparisonwithstandardselbkg = 0;
+bool force_lowstatcat = 0;
+bool force_ultralowstatcat = 0;
 
 #include <assert.h>
 
@@ -881,16 +883,24 @@ fit_output* fit_dataset(TString diffvariable, TString splitting, int bin, const 
   }
 
   bool islowstatcat = false;
+  bool isultralowstatcat = false;
   if (splitting=="EEEE") islowstatcat=true;
   if (diffvariable=="costhetastar" && splitting=="EEEE" && bin==1) islowstatcat=true;
   if (diffvariable=="costhetastar" && splitting=="EEEE" && bin>=4) islowstatcat=true;
   if (diffvariable=="invmass" && bin>=12) islowstatcat=true;
+  if (diffvariable=="invmass" && splitting=="EEEE" && bin==8) isultralowstatcat=true;
   if (diffvariable=="diphotonpt" && splitting=="EEEE" && bin>=16) islowstatcat=true;
+  if (diffvariable=="diphotonpt" && splitting=="EBEE" && bin>=5 && bin<=8) isultralowstatcat=true;
   if (diffvariable=="diphotonpt" && splitting=="EEEE" && bin<=4) islowstatcat=true;
   if (diffvariable=="dR" && splitting=="EBEE" && bin==6) islowstatcat=true;
   if (!(diffvariable=="invmass" || diffvariable=="diphotonpt" || diffvariable=="costhetastar" || diffvariable=="dphi")) islowstatcat=true;
+  if (force_lowstatcat) islowstatcat=true;
+  if (force_ultralowstatcat) isultralowstatcat=true;
 
-  find_adaptive_binning(dataset,&n_templatebins,templatebinsboundaries+0,1,islowstatcat ? -999 : -1);
+  int code_binning = -1;
+  if (islowstatcat) code_binning = -999;
+  if (isultralowstatcat) code_binning = -9999;
+  find_adaptive_binning(dataset,&n_templatebins,templatebinsboundaries+0,1,code_binning);
 
   if (binning_roovar1==NULL || binning_roovar2==NULL){
   Double_t templatebinsboundaries_diagonal[n_templatebins_max+1];
@@ -959,7 +969,7 @@ fit_output* fit_dataset(TString diffvariable, TString splitting, int bin, const 
   }
 
   int times_to_run = 1;
-  const int ntoys = 500;
+  const int ntoys = 50;
 
   std::vector<fit_output*> do_syst_templatestatistics_outputvector;
   std::vector<fit_output*> do_syst_purefitbias_outputvector;
@@ -4258,20 +4268,20 @@ void find_adaptive_binning(RooDataSet *dset, int *n_found_bins, Double_t *array_
     for (int i=0; i<11; i++) array_bounds[i] = templatebinsboundaries_reduced[i];
     return;
   }
-  if (threshold<-100){
+  if (threshold<-100 && threshold>=-1000){
     std::cout << "APPLYING FIXED BIN NUMBER BOUND (5)" << std::endl;
     *n_found_bins=5;
     Double_t templatebinsboundaries_reduced[6] = {-3,-0.5,0,1,4,9};
     for (int i=0; i<6; i++) array_bounds[i] = templatebinsboundaries_reduced[i];
     return;
   }
-//  if (threshold<-100){
-//    std::cout << "APPLYING FIXED BIN NUMBER BOUND (4)" << std::endl;
-//    *n_found_bins=4;
-//    Double_t templatebinsboundaries_reduced[5] = {-3,-0.5,1,2,9};
-//    for (int i=0; i<5; i++) array_bounds[i] = templatebinsboundaries_reduced[i];
-//    return;
-//  }
+  if (threshold<-1000 && threshold>=-10000){
+    std::cout << "APPLYING FIXED BIN NUMBER BOUND (3)" << std::endl;
+    *n_found_bins=3;
+    Double_t templatebinsboundaries_reduced[4] = {-3,-0.5,1,9};
+    for (int i=0; i<4; i++) array_bounds[i] = templatebinsboundaries_reduced[i];
+    return;
+  }
 
   assert ((axis==1) || (axis==2));
   TString string = (axis==1) ? TString("roovar1") : TString("roovar2");
