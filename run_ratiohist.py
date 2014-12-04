@@ -41,8 +41,8 @@ for i in xrange(2):
         strdata='data'
     for mode in modes[i]:
         wait_processes()
-        file1='outphoton_effunf_'+strdata+'_'+mode+'.root'
-        file2='outphoton_effunf_'+strdata+'_'+'Default'+'.root'
+        file1='outphoton/outphoton_effunf_'+strdata+'_'+mode+'.root'
+        file2='outphoton/outphoton_effunf_'+strdata+'_'+'Default'+'.root'
         args = ['root','-q','-b','-l','make_histos_syst_rawyield.C("'+file1+'","'+file2+'","'+mode+'");"']
         lista_processi.append(Popen(args))
             

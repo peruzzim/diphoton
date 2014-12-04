@@ -1388,11 +1388,27 @@ std::pair<float,float> template_production_class::getscalefactor_foreffunf(float
 
   // DEBUG XXX da aggiungere sf uncertainties e come gestirle nel seguito
 
-  return std::pair<float,float>(1,1);
-//
-//  pho1_eta = fabs(pho1_eta);
-//  pho2_eta = fabs(pho2_eta);
-//
+  pho1_eta = fabs(pho1_eta);
+  pho2_eta = fabs(pho2_eta);
+
+  float sf = 1;
+  float sferr = 0;
+
+  // Trigger efficiency
+  const float trig_eff_EBEB_highr9 = 1.;
+  const float trig_eff_EBEB_lowr9 = 0.993;
+  const float trig_eff_notEBEB_highr9 = 1.;
+  const float trig_eff_notEBEB_lowr9 = 0.988;
+  const float r9_threshold = 0.94;
+
+  // Trigger efficiency
+  if (fabs(pho1_eta)<1.5 && fabs(pho2_eta)<1.5) sf *= (pho1_r9>r9_threshold && pho2_r9>r9_threshold) ? trig_eff_EBEB_highr9 : trig_eff_EBEB_lowr9;
+  else sf *= (pho1_r9>r9_threshold && pho2_r9>r9_threshold) ? trig_eff_notEBEB_highr9 :trig_eff_notEBEB_lowr9;
+
+
+  sf*=0.99*0.99;
+
+//  // Efficiency data/mc scale factors
 //  if (!histo_zee_scalefactor) {
 //    TFile *file_histo_zee_scalefactor = new TFile("histo_scalefactor_Zee_totaluncertainty.root");
 //    file_histo_zee_scalefactor->GetObject("histo_withsyst",histo_zee_scalefactor);
@@ -1404,21 +1420,6 @@ std::pair<float,float> template_production_class::getscalefactor_foreffunf(float
 //    assert(histo_zuug_scalefactor);
 //  }
 //
-//  float sf = 1;
-//  float sferr = 0;
-//
-//  // Trigger efficiency
-//  const float trig_eff_EBEB_highr9 = 1.;
-//  const float trig_eff_EBEB_lowr9 = 0.993;
-//  const float trig_eff_notEBEB_highr9 = 1.;
-//  const float trig_eff_notEBEB_lowr9 = 0.988;
-//  const float r9_threshold = 0.94;
-//
-//  // Trigger efficiency
-//  if (fabs(pho1_eta)<1.5 && fabs(pho2_eta)<1.5) sf *= (pho1_r9>r9_threshold && pho2_r9>r9_threshold) ? trig_eff_EBEB_highr9 : trig_eff_EBEB_lowr9;
-//  else sf *= (pho1_r9>r9_threshold && pho2_r9>r9_threshold) ? trig_eff_notEBEB_highr9 :trig_eff_notEBEB_lowr9;
-//
-//  // Efficiency data/mc scale factors
 //  {
 //    int binx;
 //    int biny;
@@ -1440,7 +1441,8 @@ std::pair<float,float> template_production_class::getscalefactor_foreffunf(float
 //    sf*=histo_zuug_scalefactor->GetBinContent(bin);
 //  }
 //
-//  return std::pair<float,float>(sf,sferr);
+
+  return std::pair<float,float>(sf,sferr);
 
 };
 

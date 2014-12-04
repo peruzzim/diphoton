@@ -45,12 +45,12 @@ TString("p_{T, #gamma #gamma}, incl."),\
 TString("|cos #theta^{*}|, incl."),\
 TString("#Delta #phi_{#gamma #gamma}, incl."),\
 TString("#Delta R_{#gamma #gamma}, incl."),\
-TString("N_{jets}"),\
+TString("Njets"),\
 TString("p_{T,j}, #geq 1j"),\
-TString("p_{T,#gamma ,j}^{lead}, #geq 1j"),\
-TString("p_{T,#gamma ,j}^{trail}, #geq 1j"),\
-TString("p_{T,#gamma ,j}^{close}, #geq 1j"),\
-TString("p_{T,#gamma ,j}^{far}, #geq 1j"),\
+TString("#Delta R{#gamma ,j}^{lead}, #geq 1j"),\
+TString("#Delta R{#gamma ,j}^{trail}, #geq 1j"),\
+TString("#Delta R{#gamma ,j}^{close}, #geq 1j"),\
+TString("#Delta R{#gamma ,j}^{far}, #geq 1j"),\
 TString("p_{T,j}^{lead}, #geq 2j"),\
 TString("p_{T,j}^{trail}, #geq 2j"),\
 TString("#Delta #eta_{jj}, #geq 2j"),\

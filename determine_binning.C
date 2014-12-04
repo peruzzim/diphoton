@@ -7,8 +7,8 @@
 #include "TString.h"
 #include "TFile.h"
 
-const bool exclude_EEEE = 0;
-const bool exclude_EBEE = 0;
+const bool exclude_EEEE = 1;
+const bool exclude_EBEE = 1;
 
 using namespace std;
 
