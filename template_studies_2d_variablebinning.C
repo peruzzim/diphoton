@@ -1665,7 +1665,7 @@ fit_output* fit_dataset(TString diffvariable, TString splitting, int bin, const 
       frame1bla->GetYaxis()->SetLabelSize(0.03);
       frame1bla->GetYaxis()->SetTitleOffset(1.45);
       dataset->plotOn(frame1bla,Name("data"));
-      //      model_2D_uncorrelated_unbinned->plotOn(frame1bla,Name("fit"));
+      model_2D_uncorrelated_unbinned->plotOn(frame1bla,Name("fit"));
       sigsigpdf_unbinned->plotOn(frame1bla,Name("plot_sigsig_axis1_unbinned"),Normalization(fsigsig->getVal(),RooAbsPdf::Relative),LineStyle(kDashed),LineColor(kRed));
       sigbkgpdf_unbinned->plotOn(frame1bla,Name("plot_sigbkg_axis1_unbinned"),Normalization(fsigbkg->getVal(),RooAbsPdf::Relative),LineStyle(kDashed),LineColor(kGreen));
       bkgsigpdf_unbinned->plotOn(frame1bla,Name("plot_bkgsig_axis1_unbinned"),Normalization(fbkgsig->getVal(),RooAbsPdf::Relative),LineStyle(kDashed),LineColor(kCyan));
@@ -1691,7 +1691,7 @@ fit_output* fit_dataset(TString diffvariable, TString splitting, int bin, const 
       frame2bla->GetYaxis()->SetLabelSize(0.03);
       frame2bla->GetYaxis()->SetTitleOffset(1.45);
       dataset->plotOn(frame2bla,Name("data"));
-      //      model_2D_uncorrelated_unbinned->plotOn(frame2bla,Name("fit"));
+      model_2D_uncorrelated_unbinned->plotOn(frame2bla,Name("fit"));
       sigsigpdf_unbinned->plotOn(frame2bla,Name("plot_sigsig_axis2_unbinned"),Normalization(fsigsig->getVal(),RooAbsPdf::Relative),LineStyle(kDashed),LineColor(kRed));
       sigbkgpdf_unbinned->plotOn(frame2bla,Name("plot_sigbkg_axis2_unbinned"),Normalization(fsigbkg->getVal(),RooAbsPdf::Relative),LineStyle(kDashed),LineColor(kGreen));
       bkgsigpdf_unbinned->plotOn(frame2bla,Name("plot_bkgsig_axis2_unbinned"),Normalization(fbkgsig->getVal(),RooAbsPdf::Relative),LineStyle(kDashed),LineColor(kCyan));

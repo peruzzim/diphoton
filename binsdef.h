@@ -189,7 +189,8 @@ const char* get_unit(TString dvar){
 const int nclosest = 5;
 const int nclosestmore = 40;
 
-const Int_t n_histobins = 96;
+//const Int_t n_histobins = 96;
+const Int_t n_histobins = 64;
 //const Int_t n_histobins = 1200;
 const Float_t leftrange = -3;
 const Float_t rightrange = 9;
