@@ -997,6 +997,8 @@ void template_production_class::Loop(int maxevents)
 
       int event_ok_for_dataset_local = event_ok_for_dataset;
       if (!reco_in_acc) event_ok_for_dataset_local = -1;
+      if (reco_in_acc && event_ok_for_dataset_local<0) cout << "ERROR" << endl;
+      reco_in_acc = reco_in_acc && (event_ok_for_dataset_local>-1);
       if (event_ok_for_dataset_local==3 || event_ok_for_dataset_local==4) event_ok_for_dataset_local=1;
 
       int event_ok_for_dataset_local_gen = -1;
@@ -1018,9 +1020,13 @@ void template_production_class::Loop(int maxevents)
 
       std::map<TString,Float_t> mydiff_reco; 
       std::map<TString,Float_t> mydiff_gen; 
+
+      if (!isdata && reco_in_acc && matched && gen_in_acc && (event_ok_for_dataset_local_gen!=event_ok_for_dataset_local)) {
+	cout << "some problem with reco/gen matched event" << endl;
+      }
       
-      reco_in_acc = reco_in_acc && (event_ok_for_dataset_local>-1);
-      if (reco_in_acc) gen_in_acc = gen_in_acc && (event_ok_for_dataset_local_gen==event_ok_for_dataset_local);
+      if (!isdata && reco_in_acc) reco_in_acc = reco_in_acc && matched;
+      if (!isdata && reco_in_acc) gen_in_acc = gen_in_acc && (event_ok_for_dataset_local_gen==event_ok_for_dataset_local);
 
       if (reco_in_acc){
 	FillDiffVariables(false);
@@ -1045,8 +1051,6 @@ void template_production_class::Loop(int maxevents)
 	 
 	if (bin_reco==diffvariables_nbins_list(*diffvariable)-1) reco_in_acc_local=false;
 	if (bin_gen==diffvariables_nbins_list(*diffvariable)-1) gen_in_acc_local=false;
-	
-	if (!isdata && reco_in_acc_local) reco_in_acc_local = reco_in_acc_local && matched;
 
  	if (effunf_dotreeforsyst==TString("DiElectron") && dataset_id==dy_dataset_id) {
 	  float sf = getscalefactor_forzeesubtraction(event_ok_for_dataset_local).first;
