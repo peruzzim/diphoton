@@ -31,6 +31,8 @@ void make_sherpa_predictions(TString filename = "outphoton/outphoton_effunf_sig_
       if (i!=0) h[0]->Add(h[i]);
     }
 
+    cout << "Sherpa integral " << h[0]->Integral()/1e3 << " pb" << endl;
+
     TH1F *hi=h[0];
     for (int i=0; i<hi->GetNbinsX(); i++) hi->SetBinContent(i+1,hi->GetBinContent(i+1)/hi->GetBinWidth(i+1));
     for (int i=0; i<hi->GetNbinsX(); i++) hi->SetBinError(i+1,0);
