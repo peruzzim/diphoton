@@ -181,7 +181,6 @@ float* diffvariables_binsdef_list(TString diffvariable){
 const char* get_unit(TString dvar){
   TString unit = diffvariables_units_list(dvar);
   TString out = TString(Form("%s %s",diffvariables_names_list(dvar).Data(),unit!=TString("") ? (TString("(").Append(unit.Append(")"))).Data() : TString("").Data())).Data();
-  cout << "DEBUG " << out.Data() << endl;
   return out.Data();
 };
 
