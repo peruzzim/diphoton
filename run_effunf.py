@@ -15,7 +15,7 @@ isdata.append(1)
 
 # MC (do not swap with data)
 file.append('./gg_minitree_mc_141106_step1_isogeomcorr/allmc.root')
-modes.append(['Default','ESMEARup','ESMEARdown','JERup','JERdown'])
+modes.append(['Default','ESMEARup','ESMEARdown','JERup','JERdown','efficiency'])
 isdata.append(0)
 
 # MC pileup rew up/down

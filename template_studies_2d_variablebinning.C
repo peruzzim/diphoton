@@ -2310,7 +2310,7 @@ void fit_dataset_allbins(TString diffvariable="", TString splitting="", TString 
 
 TH1F* run_unfolding(RooUnfoldResponse *resp, TH1F *folded, int niterations = 4){
   RooUnfoldBayes *unfmethod = new RooUnfoldBayes(resp,folded,niterations);
-  TH1F *unfolded = (TH1F*)(unfmethod->Hreco()); // CHECK ERROR TREATMENT ARGUMENT 
+  TH1F *unfolded = (TH1F*)(unfmethod->Hreco(RooUnfold::kCovToy)); // CHECK ERROR TREATMENT ARGUMENT 
   delete unfmethod;
   return unfolded;
 };

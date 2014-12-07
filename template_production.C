@@ -1057,7 +1057,10 @@ void template_production_class::Loop(int maxevents)
 	  if (reco_in_acc_local) histo_zee_yieldtosubtract[get_name_zeehisto(event_ok_for_dataset_local,*diffvariable)]->Fill(mydiff_reco[*diffvariable],weight*sf);
 	}
 	else {
-	  float sf = (reco_in_acc_local && !isdata) ? getscalefactor_foreffunf(pholead_pt,photrail_pt,pholead_eta,photrail_eta,pholead_r9,photrail_r9).first : 1;
+	  std::pair<float,float> sf_ = (reco_in_acc_local && !isdata) ? getscalefactor_foreffunf(pholead_pt,photrail_pt,pholead_eta,photrail_eta,pholead_r9,photrail_r9) : std::pair<float,float>(1,0);
+	  float sf = sf_.first;
+	  float sferr = sf_.second;
+	  if (effunf_dotreeforsyst=="efficiency") sf*=(1+sferr);
 	  if (reco_in_acc_local && gen_in_acc_local) responsematrix_effunf[get_name_responsematrix_effunf(event_ok_for_dataset_local,*diffvariable)].hmatched->Fill(mydiff_reco[*diffvariable],mydiff_gen[*diffvariable],weight*sf);
 	  if (reco_in_acc_local) responsematrix_effunf[get_name_responsematrix_effunf(event_ok_for_dataset_local,*diffvariable)].hreco->Fill(mydiff_reco[*diffvariable],weight*sf);
 	  if (gen_in_acc_local) responsematrix_effunf[get_name_responsematrix_effunf(event_ok_for_dataset_local_gen,*diffvariable)].htruth->Fill(mydiff_gen[*diffvariable],weight);
@@ -1154,7 +1157,7 @@ void template_production(TString filename="input.root", TString mode="", bool is
   if (mode=="1pgen1fside_2frag") treename_chosen=treename[17];
 
   if (mode=="effunf") treename_chosen = Form("LightTreeGenReco_%s",effunf_dotreeforsyst.Data());
-  if (mode=="effunf" && (effunf_dotreeforsyst=="PUup" || effunf_dotreeforsyst=="PUdown")) treename_chosen = "LightTreeGenReco_Default";
+  if (mode=="effunf" && (effunf_dotreeforsyst=="PUup" || effunf_dotreeforsyst=="PUdown" || effunf_dotreeforsyst=="efficiency")) treename_chosen = "LightTreeGenReco_Default";
 
   file->GetObject(treename_chosen.Data(),t);
 
@@ -1410,7 +1413,14 @@ std::pair<float,float> template_production_class::getscalefactor_foreffunf(float
   else sf *= (pho1_r9>r9_threshold && pho2_r9>r9_threshold) ? trig_eff_notEBEB_highr9 :trig_eff_notEBEB_lowr9;
 
 
-  sf*=0.99*0.99;
+  // APPROXIMATE TREATMENT, TO BE REFINED
+
+  float seleff = pow(0.99,2);
+  float selunc = 0.02*2;
+  
+  sf*=seleff;
+  sferr=selunc;
+
 
 //  // Efficiency data/mc scale factors
 //  if (!histo_zee_scalefactor) {

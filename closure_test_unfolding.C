@@ -1,6 +1,7 @@
 #include "binsdef.h"
 #include "TH1F.h"
 #include "TFile.h"
+#include "TCanvas.h"
 #include <iostream>
 #include <vector>
 #include "RooUnfold-1.1.1/src/RooUnfold.h"
@@ -9,6 +10,7 @@
 using namespace std;
 
 const int niter = 4;
+bool doplots = false;
 
 TH1F* run_unfolding(RooUnfoldResponse *resp, TH1F *folded, int niterations, TH1F *thist){
   RooUnfoldBayes *unfmethod = new RooUnfoldBayes(resp,folded,niterations);
@@ -63,9 +65,14 @@ void closure_test_unfolding(TString filename_unfmatrix="outphoton/outphoton_effu
 
       outfile->cd();
       ratio->Write();
+      if (doplots) {
+	TCanvas *c = new TCanvas();
+	c->cd();
+	ratio->Draw();
+      }
 
     }
   }
   
-  outfile->Close();
+  //  outfile->Close();
 }
