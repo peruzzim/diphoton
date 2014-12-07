@@ -2346,6 +2346,7 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
   std::map<TString,TH1F*> systplots;
   TH1F *xsec_centralvalue_raw = NULL;
   TH1F *ngg_centralvalue_raw = NULL;
+  TH1F *ngg_centralvalue_raw_cat[3] = {NULL,NULL,NULL};
   TH1F *purity[4] = {NULL,NULL,NULL,NULL};
 
   std::map<TString,systematics_element> map_systematics_list;
@@ -2704,24 +2705,29 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
     TH1F *axsec[3];
     TH1F *axsec_raw[3];
     TH1F *angg[3];
+    TH1F *angg_raw[3];
     for (int i=0; i<3; i++) {
       axsec_file[i] = new TFile(Form("plots/histo_xsec_%s_%s.root", diffvariable.Data(),sp[i].Data()));
       axsec_file[i]->GetObject("xsec_centralvalue",axsec[i]);
       axsec_file[i]->GetObject("xsec_centralvalue_raw",axsec_raw[i]);
       axsec_file[i]->GetObject("ngg_centralvalue",angg[i]);
+      axsec_file[i]->GetObject("ngg_centralvalue_raw",angg_raw[i]);
       angg[i]->Print();
       cout << sp[i].Data() << " " << angg[i]->Integral() << " -> " << angg[i]->Integral()/intlumi/1e3 << " pb" << endl;
       xsec_centralvalue_cat[i] = (TH1F*)(axsec[i]->Clone(Form("xsec_centralvalue_%s",splitting.Data())));
       ngg_centralvalue_cat[i] = (TH1F*)(angg[i]->Clone(Form("ngg_centralvalue_%s",splitting.Data())));
+      ngg_centralvalue_raw_cat[i] = (TH1F*)(angg_raw[i]->Clone(Form("ngg_centralvalue_raw_%s",splitting.Data())));
     }
     for (int i=1; i<3; i++) {
       axsec[0]->Add(axsec[i]);
       axsec_raw[0]->Add(axsec_raw[i]);
       angg[0]->Add(angg[i]);
+      angg_raw[0]->Add(angg_raw[i]);
     }
     xsec_centralvalue=axsec[0];
     xsec_centralvalue_raw=axsec_raw[0];
     ngg_centralvalue=angg[0];
+    ngg_centralvalue_raw=angg_raw[0];
     cout << "incl " << ngg_centralvalue->Integral() << " -> " << ngg_centralvalue->Integral()/intlumi/1e3 << " pb" << endl;
 
     TH1F *h[3][4];
@@ -2735,21 +2741,32 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
     TH1F *totev[3];
     TH1F *ev[3][4];
 
-    for (int i=0; i<3; i++) {totev[i] = (TH1F*)(angg[i]->Clone(Form("totev_%d",i))); totev[i]->Divide(h[i][0]);}
+    for (int i=0; i<3; i++) {totev[i] = (TH1F*)(angg_raw[i]->Clone(Form("totev_%d",i))); totev[i]->Divide(h[i][0]);}
+    for (int i=0; i<3; i++) for (int k=0; k<totev[i]->GetNbinsX(); k++) totev[i]->SetBinError(k+1,0);
+
+    h[0][2]->Reset();
+    h[2][2]->Reset();
+
     for (int j=0; j<4; j++) for (int i=0; i<3; i++) {ev[i][j] = (TH1F*)(totev[i]->Clone(Form("ev_%d_%d",i,j))); ev[i][j]->Multiply(h[i][j]);} 
     for (int j=0; j<4; j++) for (int i=1; i<3; i++) ev[0][j]->Add(ev[i][j]);
     for (int i=1; i<3; i++) totev[0]->Add(totev[i]);  
     for (int j=0; j<4; j++) ev[0][j]->Divide(totev[0]);
     ev[0][1]->Add(ev[0][2]);
 
-    ev[0][0]->Print();
-    ev[0][1]->Print();
-    ev[0][3]->Print();
-
     purity[0] = ev[0][0]; purity[0]->SetName("purity_sigsig");
     purity[1] = ev[0][1]; purity[1]->SetName("purity_sigbkg");
     purity[2] = (TH1F*)(purity[1]->Clone("purity_bkgsig_donotuse")); purity[2]->Reset();
     purity[3] = ev[0][3]; purity[3]->SetName("purity_bkgbkg");
+
+    int colors[6] = {kRed, kGreen, kCyan, kBlack, kBlue, kMagenta};
+    for (int i=0; i<4; i++){
+      purity[i]->SetMarkerStyle(20);
+      purity[i]->SetMarkerColor(colors[i]);
+      purity[i]->SetLineColor(colors[i]);
+      purity[i]->SetLineWidth(2);
+      purity[i]->GetYaxis()->SetRangeUser(0,1);
+      purity[i]->GetYaxis()->SetTitle("");
+    }
 
   }
 
