@@ -1,5 +1,8 @@
+#include <TROOT.h>
+#include <TStyle.h>
 #include "binsdef.h"
 #include "TH1F.h"
+#include "TF1.h"
 #include "TFile.h"
 #include "TCanvas.h"
 #include <iostream>
@@ -11,6 +14,7 @@ using namespace std;
 
 const int niter = 4;
 bool doplots = false;
+bool doprintplots = false;
 
 TH1F* run_unfolding(RooUnfoldResponse *resp, TH1F *folded, int niterations, TH1F *thist){
   RooUnfoldBayes *unfmethod = new RooUnfoldBayes(resp,folded,niterations);
@@ -24,6 +28,8 @@ TH1F* run_unfolding(RooUnfoldResponse *resp, TH1F *folded, int niterations, TH1F
 };
 
 void closure_test_unfolding(TString filename_unfmatrix="outphoton/outphoton_effunf_sig_Default.root", TString filename_foldedhisto="outphoton/outphoton_effunf_sig_Default.root", TString filename_truehisto="outphoton/outphoton_effunf_sig_Default.root", TString var="", TString splitting=""){
+
+  gStyle->SetOptStat(0);
 
   std::vector<TString> split_list;
   split_list.push_back("EBEB");
@@ -68,7 +74,20 @@ void closure_test_unfolding(TString filename_unfmatrix="outphoton/outphoton_effu
       if (doplots) {
 	TCanvas *c = new TCanvas();
 	c->cd();
-	ratio->Draw();
+	ratio->SetLineColor(kBlack);
+	ratio->SetLineWidth(2);
+	ratio->Draw("E1");
+	ratio->GetYaxis()->SetRangeUser(0.5,1.5);
+	TF1 *line = new TF1("line","1",ratio->GetXaxis()->GetXmin(),ratio->GetXaxis()->GetXmax());
+	line->SetLineColor(kRed);
+	line->Draw("same");
+
+	if (doprintplots){
+	  c->SaveAs(Form("plots/closure_unfolding_%s_%s.pdf",diffvariable.Data(),reg.Data()));
+	  c->SaveAs(Form("plots/closure_unfolding_%s_%s.png",diffvariable.Data(),reg.Data()));
+	  c->SaveAs(Form("plots/closure_unfolding_%s_%s.root",diffvariable.Data(),reg.Data()));
+	}
+	
       }
 
     }
