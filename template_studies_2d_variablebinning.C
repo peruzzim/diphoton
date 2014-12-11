@@ -2955,11 +2955,11 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
 
     const int n_cats = 3;
 
-    std::vector<TH1F*> toadd_statistic[n_cats]; 
-    std::vector<TH1F*> toadd_uncorrelated[n_cats]; 
-    std::vector<TH1F*> toadd_1catcorrelated[n_cats];
-    std::vector<TH1F*> toadd_allcatcorrelated[n_cats];
-    std::vector<TH1F*> toadd_everything[n_cats];
+    std::map<TString,TH1F*> toadd_statistic[n_cats]; 
+    std::map<TString,TH1F*> toadd_uncorrelated[n_cats]; 
+    std::map<TString,TH1F*> toadd_1catcorrelated[n_cats];
+    std::map<TString,TH1F*> toadd_allcatcorrelated[n_cats];
+    std::map<TString,TH1F*> toadd_everything[n_cats];
 
     TFile *fsysts[3];
     fsysts[0] = new TFile(Form("plots/histo_systsummaryfinal_%s_EBEB.root", diffvariable.Data()));;
@@ -2970,13 +2970,16 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
       for (std::map<TString,systematics_element>::const_iterator it = map_systematics_list.begin(); it!=map_systematics_list.end(); it++){
 	TH1F *hist = NULL;
 	fsysts[i]->GetObject(Form("systplot_%s",it->first.Data()),hist);
-	if (!hist) continue;
+	if (!hist) {
+	  cout << "WARNING: " << it->first.Data() << " histo not found in cat " << i << endl;
+	  continue;
+	}
 	hist->Sumw2();
-	toadd_everything[i].push_back(hist);
-	if (it->first=="statistic") toadd_statistic[i].push_back(hist);
-	else if (it->second.is_uncorrelated) toadd_uncorrelated[i].push_back(hist);
-	else if (it->second.is_1catcorrelated) toadd_1catcorrelated[i].push_back(hist);
-	else if (it->second.is_allcatcorrelated) toadd_allcatcorrelated[i].push_back(hist);
+	toadd_everything[i][it->first]=hist;
+	if (it->first=="statistic") toadd_statistic[i][it->first]=(hist);
+	else if (it->second.is_uncorrelated) toadd_uncorrelated[i][it->first]=(hist);
+	else if (it->second.is_1catcorrelated) toadd_1catcorrelated[i][it->first]=(hist);
+	else if (it->second.is_allcatcorrelated) toadd_allcatcorrelated[i][it->first]=(hist);
       }
     }
 
@@ -2985,8 +2988,8 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
     const int n_syst_allcatcorr = toadd_allcatcorrelated[0].size();
 
     for (int i=0; i<3; i++) {
-      for (std::vector<TH1F*>::iterator it = toadd_everything[i].begin(); it!=toadd_everything[i].end(); it++){
-	(*it)->Multiply(ngg_centralvalue_cat[i]);
+      for (std::map<TString,TH1F*>::iterator it = toadd_everything[i].begin(); it!=toadd_everything[i].end(); it++){
+	it->second->Multiply(ngg_centralvalue_cat[i]);
       }
     }
     
@@ -2999,10 +3002,10 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
     for (int i=0; i<n_cats; i++){
       for (int bin = 0; bin<bins_to_run; bin++){
 	assert (toadd_statistic[i].size()==1);
-	a[i][bin]=toadd_statistic[i].at(0)->GetBinContent(bin+1);
-	for (int k=0; k<n_syst_uncorr; k++) b[i][k][bin]=toadd_uncorrelated[i][k]->GetBinContent(bin+1);
-	for (int k=0; k<n_syst_1catcorr; k++) c[i][k][bin]=toadd_1catcorrelated[i][k]->GetBinContent(bin+1);
-	for (int k=0; k<n_syst_allcatcorr; k++) d[i][k][bin]=toadd_allcatcorrelated[i][k]->GetBinContent(bin+1);
+	a[i][bin]=toadd_statistic[i].begin()->second->GetBinContent(bin+1);
+	for (std::map<TString,TH1F*>::iterator it = toadd_uncorrelated[i].begin(); it!= toadd_uncorrelated[i].end(); it++) b[i][std::distance(toadd_uncorrelated[i].begin(),it)][bin]=it->second->GetBinContent(bin+1);
+	for (std::map<TString,TH1F*>::iterator it = toadd_1catcorrelated[i].begin(); it!= toadd_1catcorrelated[i].end(); it++) c[i][std::distance(toadd_1catcorrelated[i].begin(),it)][bin]=it->second->GetBinContent(bin+1);
+	for (std::map<TString,TH1F*>::iterator it = toadd_allcatcorrelated[i].begin(); it!= toadd_allcatcorrelated[i].end(); it++) d[i][std::distance(toadd_allcatcorrelated[i].begin(),it)][bin]=it->second->GetBinContent(bin+1);
       }
     }
 
@@ -3125,12 +3128,6 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
       systall=sqrt(res);
     }
 
-//    for(int bin = 0; bin<bins_to_run; bin++) {
-//      systplot_totfinal_inclusive->SetBinContent(bin+1,systcolumn[bin]/xsec_centralvalue->GetBinContent(bin+1));
-//      systplot_totfinal_inclusive->SetBinError(bin+1,0);
-//    }
-
-
     for (int i=0; i<n_cats; i++){
       std::cout << std::endl;
       std::cout << "---" << std::endl;
@@ -3183,7 +3180,6 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
     std::cout << statall/intlumi/1e3 << " pb" << std::endl;
     std::cout << std::endl;
 
-
     std::cout << "SYST UNCERTAINTY" << std::endl;
     std::cout << systall/ngg_centralvalue->Integral() << " relative" << std::endl;
     std::cout << systall/intlumi/1e3 << " pb" << std::endl;
@@ -3202,48 +3198,66 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
     std::cout << sqrt(pow(e_stat,2)+pow(e_syst,2)+pow(e_lumi,2)) << " relative" << std::endl;
     std::cout << sqrt(pow(e_stat,2)+pow(e_syst,2)+pow(e_lumi,2))*ngg_centralvalue->Integral()/intlumi/1e3 << " pb" << std::endl;
     std::cout << std::endl;
-  
-    TCanvas *canv3 = new TCanvas();
-    canv3->cd();
-    //    systplot_totfinal_inclusive->Draw();
-    canv3->SaveAs(Form("plots/histo_systsummaryfinal_%s_inclusive.jpg", diffvariable.Data()));
-    canv3->SaveAs(Form("plots/histo_systsummaryfinal_%s_inclusive.png", diffvariable.Data()));
-    canv3->SaveAs(Form("plots/histo_systsummaryfinal_%s_inclusive.root", diffvariable.Data()));
-    canv3->SaveAs(Form("plots/histo_systsummaryfinal_%s_inclusive.pdf", diffvariable.Data()));
 
 
-    TH1F *histo_uncorrelated_allcat[n_syst_uncorr];
-    for (int k=0; k<n_syst_uncorr; k++){
+    std::map<TString,TH1F*> histo_uncorrelated_allcat;
+    for (std::map<TString,TH1F*>::iterator it = toadd_uncorrelated[0].begin(); it!=toadd_uncorrelated[0].end(); it++){
+      TString k = it->first;
       std::vector<TH1F*> toadd_uncorrelated_allcat;
       for (int i=0; i<n_cats; i++) toadd_uncorrelated_allcat.push_back(toadd_uncorrelated[i].at(k));
       histo_uncorrelated_allcat[k] = AddTHInQuadrature(toadd_uncorrelated_allcat,Form("%s_allcat",toadd_uncorrelated[0][k]->GetName()));  
-      histo_uncorrelated_allcat[k]->Divide(xsec_centralvalue);
+      histo_uncorrelated_allcat[k]->Divide(ngg_centralvalue);
       for (int bin=0; bin<bins_to_run; bin++) histo_uncorrelated_allcat[k]->SetBinError(bin+1,0);
     }
-    TH1F *histo_1catcorrelated_allcat[n_syst_1catcorr];
-    for (int k=0; k<n_syst_1catcorr; k++){
+    std::map<TString,TH1F*> histo_1catcorrelated_allcat;
+    for (std::map<TString,TH1F*>::iterator it =toadd_1catcorrelated[0].begin(); it!=toadd_1catcorrelated[0].end();it++){
+      TString k = it->first;
       std::vector<TH1F*> toadd_1catcorrelated_allcat;
       for (int i=0; i<n_cats; i++) toadd_1catcorrelated_allcat.push_back(toadd_1catcorrelated[i][k]);
       histo_1catcorrelated_allcat[k] = AddTHInQuadrature(toadd_1catcorrelated_allcat,Form("%s_allcat",toadd_1catcorrelated[0][k]->GetName()));
-      histo_1catcorrelated_allcat[k]->Divide(xsec_centralvalue);
+      histo_1catcorrelated_allcat[k]->Divide(ngg_centralvalue);
       for (int bin=0; bin<bins_to_run; bin++) histo_1catcorrelated_allcat[k]->SetBinError(bin+1,0);
     }
-    TH1F *histo_allcatcorrelated_allcat[n_syst_allcatcorr];
-    for (int k=0; k<n_syst_allcatcorr; k++){
+    std::map<TString,TH1F*> histo_allcatcorrelated_allcat;
+    for (std::map<TString,TH1F*>::iterator it =toadd_allcatcorrelated[0].begin(); it!=toadd_allcatcorrelated[0].end();it++){
+      TString k = it->first;
       histo_allcatcorrelated_allcat[k] = (TH1F*)(toadd_allcatcorrelated[0][k]->Clone(Form("%s_allcat",toadd_allcatcorrelated[0][k]->GetName())));
       histo_allcatcorrelated_allcat[k]->Reset();
       for (int i=0; i<n_cats; i++) histo_allcatcorrelated_allcat[k]->Add(toadd_allcatcorrelated[i][k]);
-      histo_allcatcorrelated_allcat[k]->Divide(xsec_centralvalue);
+      histo_allcatcorrelated_allcat[k]->Divide(ngg_centralvalue);
       for (int bin=0; bin<bins_to_run; bin++) histo_allcatcorrelated_allcat[k]->SetBinError(bin+1,0);
     }
 
+    // only systematics, no lumi nor statistics
+    TH1F *systplot_totfinal_inclusive = (TH1F*)(toadd_statistic[0].begin()->second->Clone("systplot_totfinal_inclusive"));
+    systplot_totfinal_inclusive->Reset();
+    systplot_totfinal_inclusive->SetTitle("Systematic uncertainties");
+    for(int bin = 0; bin<bins_to_run; bin++) {
+      systplot_totfinal_inclusive->SetBinContent(bin+1,systcolumn[bin]/ngg_centralvalue->GetBinContent(bin+1));
+      systplot_totfinal_inclusive->SetBinError(bin+1,0);
+    }
+
+//    TCanvas *canv3 = new TCanvas();
+//    canv3->cd();
+//    systplot_totfinal_inclusive->Draw();
+//    canv3->SaveAs(Form("plots/histo_systsummaryfinal_%s_inclusive.jpg", diffvariable.Data()));
+//    canv3->SaveAs(Form("plots/histo_systsummaryfinal_%s_inclusive.png", diffvariable.Data()));
+//    canv3->SaveAs(Form("plots/histo_systsummaryfinal_%s_inclusive.root", diffvariable.Data()));
+//    canv3->SaveAs(Form("plots/histo_systsummaryfinal_%s_inclusive.pdf", diffvariable.Data()));
+
     TCanvas *canv3b = new TCanvas();
     canv3b->cd();
-//    systplot_totfinal_inclusive->SetMinimum(0);
-//    systplot_totfinal_inclusive->Draw();
-//    histo_uncorrelated_allcat->Draw("same");
-//    for (int k=0; k<n_syst_1catcorr; k++) histo_1catcorrelated_allcat[k]->Draw("same");
-//    for (int k=0; k<n_syst_allcatcorr; k++) histo_allcatcorrelated_allcat[k]->Draw("same");
+    systplot_totfinal_inclusive->SetMinimum(0);
+    systplot_totfinal_inclusive->Draw();
+    histo_uncorrelated_allcat.begin()->second->Draw("same");
+    for (std::map<TString,TH1F*>::iterator it =toadd_1catcorrelated[0].begin(); it!=toadd_1catcorrelated[0].end(); it++){
+      TString k = it->first;
+      histo_1catcorrelated_allcat[k]->Draw("same");
+    }
+    for (std::map<TString,TH1F*>::iterator it =toadd_allcatcorrelated[0].begin(); it!=toadd_allcatcorrelated[0].end(); it++){
+      TString k = it->first;
+      histo_allcatcorrelated_allcat[k]->Draw("same");
+    }
 //    TLegend *leg_canv3b = new TLegend(0.6,0.7,0.9,0.9);
 //    leg_canv3b->AddEntry(histo_uncorrelated_allcat,"Fit bias","l");
 //    leg_canv3b->AddEntry(histo_1catcorrelated_allcat[0],"Zee subtraction","l");
@@ -3258,7 +3272,7 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
 //    leg_canv3b->AddEntry(histo_allcatcorrelated_allcat[5],"Additional noise in evt. mixing","l");
 //    leg_canv3b->AddEntry(systplot_totfinal_inclusive,"Total syst. uncertainty","l");
 //    leg_canv3b->Draw();
-//    systplot_totfinal_inclusive->GetYaxis()->SetRangeUser(0,systplot_totfinal_inclusive->GetBinContent(systplot_totfinal_inclusive->GetMaximumBin())*1.05);
+    systplot_totfinal_inclusive->GetYaxis()->SetRangeUser(0,systplot_totfinal_inclusive->GetBinContent(systplot_totfinal_inclusive->GetMaximumBin())*1.05);
     canv3b->Update();
 
     canv3b->SaveAs(Form("plots/histo_systsummaryfinal_splitted_%s_inclusive.jpg", diffvariable.Data()));
@@ -3267,7 +3281,8 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
     canv3b->SaveAs(Form("plots/histo_systsummaryfinal_splitted_%s_inclusive.pdf", diffvariable.Data()));
 
 
-
+    TCanvas *canv4 = new TCanvas();
+    canv4->cd();
     TH1F *histo_finalxs_fortheorycomp = (TH1F*)(xsec_centralvalue->Clone(Form("histo_finalxs_fortheorycomp_%s",diffvariable.Data())));
     histo_finalxs_fortheorycomp->SetTitle("Cross section (unfolding+efficiency) (stat.+syst.+lumi.)");
     histo_finalxs_fortheorycomp->Reset();
@@ -3278,30 +3293,28 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
       float relerr = sqrt(pow(systcolumn[bin]/ngg_centralvalue->GetBinContent(bin+1),2)+pow(statcolumn[bin]/ngg_centralvalue->GetBinContent(bin+1),2)+pow(lumi_rel,2));
       histo_finalxs_fortheorycomp->SetBinContent(bin+1,xs);
       histo_finalxs_fortheorycomp->SetBinError(bin+1,relerr*xs);
-      std::cout << "Bin " << bin << " " << xs << " +/- " << 100*relerr << " % (stat.+syst.+lumi.)" << std::endl;
+      cout << "Bin " << bin << " " << xs << " +/- " << 100*relerr << " % (stat.+syst.+lumi.)";
+      cout << " [ " << 100*statcolumn[bin]/ngg_centralvalue->GetBinContent(bin+1) << " (stat.) + " << 100*systcolumn[bin]/ngg_centralvalue->GetBinContent(bin+1) << " (syst.) + " << 100*lumi_rel << " (lumi.) % ]" << endl;
     }
-    TCanvas *canv4 = new TCanvas();
-    canv4->cd();
     histo_finalxs_fortheorycomp->Draw("e1");
-
     histo_finalxs_fortheorycomp->SaveAs(Form("plots/%s.root",histo_finalxs_fortheorycomp->GetName()));
 
-    TH1F *histo_finalxsnolumi_fortheorycomp = (TH1F*)(xsec_centralvalue->Clone(Form("histo_finalxsnolumi_fortheorycomp_%s",diffvariable.Data())));
-    histo_finalxsnolumi_fortheorycomp->SetTitle("Cross section (unfolding+efficiency) (stat.+syst.)");
-    histo_finalxsnolumi_fortheorycomp->Reset();
-    histo_finalxsnolumi_fortheorycomp->GetYaxis()->UnZoom();
-    SetFormat(histo_finalxsnolumi_fortheorycomp);
-    for (int bin=0; bin<bins_to_run; bin++){
-      float xs = xsec_centralvalue->GetBinContent(bin+1)/1e3;
-      float relerr = sqrt(pow(systcolumn[bin]/ngg_centralvalue->GetBinContent(bin+1),2)+pow(statcolumn[bin]/ngg_centralvalue->GetBinContent(bin+1),2));
-      histo_finalxsnolumi_fortheorycomp->SetBinContent(bin+1,xs);
-      histo_finalxsnolumi_fortheorycomp->SetBinError(bin+1,relerr*xs);
-      std::cout << "Bin " << bin << " " << xs << " +/- " << 100*relerr << " % (stat.+syst.)" << std::endl;
-    }
-    TCanvas *canv5 = new TCanvas();
-    canv5->cd();
-    histo_finalxsnolumi_fortheorycomp->Draw("e1");
-    histo_finalxsnolumi_fortheorycomp->SaveAs(Form("plots/%s.root",histo_finalxsnolumi_fortheorycomp->GetName()));
+//    TH1F *histo_finalxsnolumi_fortheorycomp = (TH1F*)(xsec_centralvalue->Clone(Form("histo_finalxsnolumi_fortheorycomp_%s",diffvariable.Data())));
+//    histo_finalxsnolumi_fortheorycomp->SetTitle("Cross section (unfolding+efficiency) (stat.+syst.)");
+//    histo_finalxsnolumi_fortheorycomp->Reset();
+//    histo_finalxsnolumi_fortheorycomp->GetYaxis()->UnZoom();
+//    SetFormat(histo_finalxsnolumi_fortheorycomp);
+//    for (int bin=0; bin<bins_to_run; bin++){
+//      float xs = xsec_centralvalue->GetBinContent(bin+1)/1e3;
+//      float relerr = sqrt(pow(systcolumn[bin]/ngg_centralvalue->GetBinContent(bin+1),2)+pow(statcolumn[bin]/ngg_centralvalue->GetBinContent(bin+1),2));
+//      histo_finalxsnolumi_fortheorycomp->SetBinContent(bin+1,xs);
+//      histo_finalxsnolumi_fortheorycomp->SetBinError(bin+1,relerr*xs);
+//      std::cout << "Bin " << bin << " " << xs << " +/- " << 100*relerr << " % (stat.+syst.)" << std::endl;
+//    }
+//    TCanvas *canv5 = new TCanvas();
+//    canv5->cd();
+//    histo_finalxsnolumi_fortheorycomp->Draw("e1");
+//    histo_finalxsnolumi_fortheorycomp->SaveAs(Form("plots/%s.root",histo_finalxsnolumi_fortheorycomp->GetName()));
 
   }
 
