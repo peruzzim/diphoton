@@ -8,6 +8,8 @@
 
 bool dolog = false;
 
+float scale_sherpa = 16.2/13.8; // = +17%
+
 void make_sherpa_predictions_(TString filename = "outphoton/outphoton_effunf_sig_Default.root", TString var="", bool withdata = false, bool with42data = false){
 
   TString lstring = dolog ? "LOG" : "";
@@ -46,6 +48,8 @@ void make_sherpa_predictions_(TString filename = "outphoton/outphoton_effunf_sig
     hi->SetTitle(Form("SHERPA prediction %s",it->Data()));
 
     hi->Scale(1e-3); // change unit to pb/GeV
+    if (scale_sherpa!=1) hi->Scale(scale_sherpa);
+
 
     TString unit = diffvariables_units_list(diffvariable);
     hi->GetXaxis()->SetTitle(Form("%s %s",diffvariables_names_list(diffvariable).Data(),unit!=TString("") ? (TString("(").Append(unit.Append(")"))).Data() : TString("").Data()));
