@@ -2347,6 +2347,7 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
   std::map<TString,TH1F*> systplots;
   TH1F *xsec_centralvalue_raw = NULL;
   TH1F *ngg_centralvalue_raw = NULL;
+  TH1F *ngg_centralvalue_raw_ZeeUPvar = NULL;
   TH1F *ngg_centralvalue_raw_cat[3] = {NULL,NULL,NULL};
   TH1F *purity[4] = {NULL,NULL,NULL,NULL};
 
@@ -2381,6 +2382,8 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
 
     TH1F *histo_zee_subtraction= (TH1F*)(eventshisto->Clone(Form("histo_zee_subtraction_%s_%s",diffvariable.Data(),splitting.Data())));
     histo_zee_subtraction->Reset();
+    TH1F *histo_zee_subtraction_UPvar= (TH1F*)(eventshisto->Clone(Form("histo_zee_subtraction_%s_%s_UPvar",diffvariable.Data(),splitting.Data())));
+    histo_zee_subtraction_UPvar->Reset();
     TFile *file_zee_subtraction = NULL;
     const bool do_zee_subtraction = true;
     if (do_zee_subtraction){
@@ -2390,6 +2393,12 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
       for (int bin=0; bin<bins_to_run; bin++){
 	histo_zee_subtraction->SetBinContent(bin+1,hist->GetBinContent(bin+1)*intlumi); // event counts are normalized to 1/fb by default
 	histo_zee_subtraction->SetBinError(bin+1,hist->GetBinError(bin+1)*intlumi);
+      }      
+      TH1F *hist_UPvar = NULL;
+      file_zee_subtraction->GetObject(Form("effunf/histo_zee_yieldtosubtract_%s_%s_UPvar",diffvariable.Data(),splitting.Data()),hist_UPvar);
+      for (int bin=0; bin<bins_to_run; bin++){
+	histo_zee_subtraction_UPvar->SetBinContent(bin+1,hist_UPvar->GetBinContent(bin+1)*intlumi); // event counts are normalized to 1/fb by default
+	histo_zee_subtraction_UPvar->SetBinError(bin+1,hist_UPvar->GetBinError(bin+1)*intlumi);
       }      
     }
 
@@ -2413,7 +2422,9 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
     std::vector<float> before;
     std::vector<float> after;
     for (int bin=0; bin<bins_to_run; bin++) before.push_back(ngg_centralvalue_raw->GetBinContent(bin+1));
+    ngg_centralvalue_raw_ZeeUPvar = (TH1F*)(ngg_centralvalue_raw->Clone("ngg_centralvalue_raw_ZeeUPvar"));
     ngg_centralvalue_raw->Add(histo_zee_subtraction,-1);
+    ngg_centralvalue_raw_ZeeUPvar->Add(histo_zee_subtraction_UPvar,-1);
     for (int bin=0; bin<bins_to_run; bin++) after.push_back(ngg_centralvalue_raw->GetBinContent(bin+1));
     
     cout << "Subtraction summary:" << endl;
@@ -2559,7 +2570,9 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
 	}
 	else if (syst.name=="zee"){
 	  for (int bin=0; bin<bins_to_run; bin++) histo_syst->Reset();
-	  cout << "FIXME" << endl;
+	  histo_syst->Divide(ngg_centralvalue_raw_ZeeUPvar,ngg_centralvalue_raw,1,1);
+	  for (int bin=0; bin<bins_to_run; bin++) histo_syst->SetBinContent(bin+1,fabs(histo_syst->GetBinContent(bin+1)-1));
+	  for (int bin=0; bin<bins_to_run; bin++) histo_syst->SetBinError(bin+1,0);
 	}
 	else if (syst.name=="JECup" && histo_JECup && histo_JECdown){
 	  // THIS IS AN UGLY HACK

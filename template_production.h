@@ -376,7 +376,7 @@ public :
    TString get_name_true_purity_isnotpp(int region, TString diffvariable);
    TString get_name_template2d_roodset(int region, TString sigorbkg);
    TString get_name_responsematrix_effunf(int region, TString diffvariable);
-   TString get_name_zeehisto(int region, TString diffvariable);
+   TString get_name_zeehisto(int region, TString diffvariable, bool isUPvar=false);
 
    Float_t pholead_outvar;
    Float_t photrail_outvar;
@@ -407,6 +407,7 @@ public :
    map<TString,roounfoldmatrices_struct> responsematrix_effunf;
    map<TString,RooUnfoldResponse*> calculated_responsematrix_effunf;
    map<TString,TH1F*> histo_zee_yieldtosubtract;
+   map<TString,TH1F*> histo_zee_yieldtosubtract_UPvar;
 
    int whichnewtemplate;
 
@@ -633,6 +634,7 @@ void template_production_class::Setup(Bool_t _isdata, TString _mode, TString _di
 	TString reg;
 	if (i==0) reg="EBEB"; else if (i==1) reg="EBEE"; else if (i==2) reg="EEEE";
 	histo_zee_yieldtosubtract[get_name_zeehisto(i,*diffvariable)] = new TH1F(Form("histo_zee_yieldtosubtract_%s_%s",diffvariable->Data(),reg.Data()),Form("histo_zee_yieldtosubtract_%s_%s",diffvariable->Data(),reg.Data()),diffvariables_nbins_list(*diffvariable)-1,diffvariables_binsdef_list(*diffvariable));
+	histo_zee_yieldtosubtract_UPvar[get_name_zeehisto(i,*diffvariable,true)] = new TH1F(Form("histo_zee_yieldtosubtract_%s_%s_UPvar",diffvariable->Data(),reg.Data()),Form("histo_zee_yieldtosubtract_%s_%s_UPvar",diffvariable->Data(),reg.Data()),diffvariables_nbins_list(*diffvariable)-1,diffvariables_binsdef_list(*diffvariable));
       }
     }
   }
@@ -906,6 +908,7 @@ void template_production_class::WriteOutput(){
 	rtemp->Write();
 
 	histo_zee_yieldtosubtract[get_name_zeehisto(i,*diffvariable)]->Write();
+	histo_zee_yieldtosubtract_UPvar[get_name_zeehisto(i,*diffvariable,true)]->Write();
       }
     }
   }
@@ -1049,11 +1052,12 @@ TString template_production_class::get_name_responsematrix_effunf(int region, TS
   return t;
 };
 
-TString template_production_class::get_name_zeehisto(int region, TString diffvariable){
+TString template_production_class::get_name_zeehisto(int region, TString diffvariable, bool isUPvar){
   TString name_signal="histo_zee_yieldtosubtract";
   TString reg;
   if (region==0) reg="EBEB"; else if (region==1) reg="EBEE"; else if (region==2) reg="EEEE"; else if (region==3) reg="EEEB";
   TString t=Form("%s_%s_%s",name_signal.Data(),reg.Data(),diffvariable.Data());
+  if (isUPvar) t.Append("_UPvar");
   return t;
 };
 

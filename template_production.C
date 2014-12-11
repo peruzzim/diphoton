@@ -1054,7 +1054,9 @@ void template_production_class::Loop(int maxevents)
 
  	if (effunf_dotreeforsyst==TString("DiElectron") && dataset_id==dy_dataset_id) {
 	  float sf = getscalefactor_forzeesubtraction(event_ok_for_dataset_local).first;
+	  float sferr = getscalefactor_forzeesubtraction(event_ok_for_dataset_local).second;
 	  if (reco_in_acc_local) histo_zee_yieldtosubtract[get_name_zeehisto(event_ok_for_dataset_local,*diffvariable)]->Fill(mydiff_reco[*diffvariable],weight*sf);
+	  if (reco_in_acc_local) histo_zee_yieldtosubtract_UPvar[get_name_zeehisto(event_ok_for_dataset_local,*diffvariable,true)]->Fill(mydiff_reco[*diffvariable],weight*sf*(1+sferr));
 	}
 	else {
 	  std::pair<float,float> sf_ = (reco_in_acc_local && !isdata) ? getscalefactor_foreffunf(pholead_pt,photrail_pt,pholead_eta,photrail_eta,pholead_r9,photrail_r9) : std::pair<float,float>(1,0);
@@ -1467,16 +1469,24 @@ std::pair<float,float> template_production_class::getscalefactor_forzeesubtracti
 
   sf*=3048./2475.;
 
-//  // p(e->g) efficiency scale factor DEBUG XXX: do not make any sense (correlation)
-//  if (ev_ok_for_dset==0) sf*=pow(1.372,2);
-//  else if (ev_ok_for_dset==1) sf*=1.372*1.096;
-//  else if (ev_ok_for_dset==2) sf*=pow(1.096,2);
-  
-//  // DEBUG XXX: NOT TO BE APPLIED IF MATCHING
-//  // fitted pp purity fraction in Zee events
-//  if (ev_ok_for_dset==0) sf*=8.6542e-01;
-//  else if (ev_ok_for_dset==1) sf*=7.9537e-01;
-//  else if (ev_ok_for_dset==2) sf*=8.5493e-01;
+  const float zee_sub_scalefactor_EBEB = 1.2;
+  const float zee_sub_scalefactor_EBEB_unc = 0.4;
+  const float zee_sub_scalefactor_notEBEB = 1.0;
+  const float zee_sub_scalefactor_notEBEB_unc = 0.4;
+
+  if (ev_ok_for_dset==0) {
+    sf*=zee_sub_scalefactor_EBEB;
+    sferr=sqrt(pow(sferr,2)+pow(zee_sub_scalefactor_EBEB_unc/zee_sub_scalefactor_EBEB,2));
+  }
+  else if (ev_ok_for_dset==1 || ev_ok_for_dset==2) {
+    sf*=zee_sub_scalefactor_notEBEB;
+    sferr=sqrt(pow(sferr,2)+pow(zee_sub_scalefactor_notEBEB_unc/zee_sub_scalefactor_notEBEB,2));
+  }
+
+  // fitted pp purity fraction in Zee events
+  if (ev_ok_for_dset==0) sf*=8.6542e-01;
+  else if (ev_ok_for_dset==1) sf*=7.9537e-01;
+  else if (ev_ok_for_dset==2) sf*=8.5493e-01;
   
   return std::pair<float,float>(sf,sferr);
   
