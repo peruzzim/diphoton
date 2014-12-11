@@ -8,7 +8,7 @@
 
 bool dolog = false;
 
-void make_sherpa_predictions(TString filename = "outphoton/outphoton_effunf_sig_Default.root", TString var="", bool withdata = false, bool with42data = false){
+void make_sherpa_predictions_(TString filename = "outphoton/outphoton_effunf_sig_Default.root", TString var="", bool withdata = false, bool with42data = false){
 
   TString lstring = dolog ? "LOG" : "";
 
@@ -97,4 +97,12 @@ void make_sherpa_predictions(TString filename = "outphoton/outphoton_effunf_sig_
   }
   
 
+}
+
+
+void make_sherpa_predictions(TString filename = "outphoton/outphoton_effunf_sig_Default.root", TString var="", bool withdata = false, bool with42data = false){
+  dolog=false;
+  make_sherpa_predictions_(filename,var,withdata,with42data);
+  dolog=true;
+  make_sherpa_predictions_(filename,var,withdata,with42data);
 }

@@ -2564,7 +2564,7 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
 	else if (syst.name=="JECup" && histo_JECup && histo_JECdown){
 	  // THIS IS AN UGLY HACK
 	  //	  for (int bin=0; bin<bins_to_run; bin++) histo_syst->SetBinContent(bin+1,histo_JECup->GetBinContent(bin+1)-1);
-	  for (int bin=0; bin<bins_to_run; bin++) histo_syst->SetBinContent(bin+1,0.5*fabs(histo_JECup->GetBinContent(bin+1)-histo_JECdown->GetBinContent(bin+1)));
+	  for (int bin=0; bin<bins_to_run; bin++) histo_syst->SetBinContent(bin+1,0.5*fabs(histo_JECup->GetBinContent(bin+1)+histo_JECdown->GetBinContent(bin+1)-2));
 	}
 	else if (syst.name=="JECdown"){
 	  //	  for (int bin=0; bin<bins_to_run; bin++) histo_syst->SetBinContent(bin+1,histo_JECdown->GetBinContent(bin+1)-1);
@@ -2572,7 +2572,7 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
 	}
 	else if (syst.name=="ESCALEup" && histo_ESCALEup && histo_ESCALEdown){
 	  //	  for (int bin=0; bin<bins_to_run; bin++) histo_syst->SetBinContent(bin+1,histo_ESCALEup->GetBinContent(bin+1)-1);
-	  for (int bin=0; bin<bins_to_run; bin++) histo_syst->SetBinContent(bin+1,0.5*fabs(histo_ESCALEup->GetBinContent(bin+1)-histo_ESCALEdown->GetBinContent(bin+1)));
+	  for (int bin=0; bin<bins_to_run; bin++) histo_syst->SetBinContent(bin+1,0.5*fabs(histo_ESCALEup->GetBinContent(bin+1)+histo_ESCALEdown->GetBinContent(bin+1)-2));
 	}
 	else if (syst.name=="ESCALEdown"){
 	  //	  for (int bin=0; bin<bins_to_run; bin++) histo_syst->SetBinContent(bin+1,histo_ESCALEdown->GetBinContent(bin+1)-1);
