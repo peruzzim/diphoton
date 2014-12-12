@@ -8,6 +8,8 @@ bool force_ultralowstatcat = 0;
 #include <assert.h>
 
 #include "tdrstyle.C"
+#include "CMS_lumi.C"
+#include "myStyleMacro.C"
 
 #include "binsdef.h"
 #include "RooFitResult.h"
@@ -151,7 +153,6 @@ RooThresholdCategory *binning_roovar2_threshold=NULL;
 RooRealVar *binning_roovar1=NULL;
 RooRealVar *binning_roovar2=NULL;
 
-
 TFile *inputfile_t2p  = NULL;
 TFile *inputfile_t1p1f = NULL;
 TFile *inputfile_t2f   = NULL;
@@ -160,6 +161,10 @@ TDirectoryFile *dir_t2p=NULL;
 TDirectoryFile *dir_t1p1f=NULL;
 TDirectoryFile *dir_t2f=NULL;
 TDirectoryFile *dir_d=NULL;
+
+// style
+
+
 
 fit_output* fit_dataset(TString diffvariable, TString splitting, int bin, const TString do_syst_string=TString("")){
 
@@ -2327,6 +2332,8 @@ void SetFormat(TH1F *h, int color=kBlack, int linestyle=1, int markerstyle=20, i
 
 void post_process(TString diffvariable="", TString splitting="", bool skipsystematics=false){
 
+  setCMSStyle();
+
   int bins_to_run = diffvariables_nbins_list(diffvariable)-1;
   float *binsdef = diffvariables_binsdef_list(diffvariable);
   
@@ -4484,7 +4491,7 @@ void reweight_pteta(RooDataSet **dset, RooDataSet *dsetdestination, int numvar){
 */
 
 fit_output* template_studies_2d_variablebinning(TString diffvariable, TString splitting, int bin, const TString do_syst_string=TString("")){
-  setTDRStyle();
+  setCMSStyle();
   return fit_dataset(diffvariable,splitting,bin,do_syst_string);
 };
 
