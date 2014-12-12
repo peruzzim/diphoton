@@ -282,30 +282,39 @@ class systematics_handler {
   std::vector<systematics_element> store;
 
   systematics_handler(){
-    store.push_back(systematics_element("purefitbias","Fit bias",1,0,1,0,0,kGreen));
-    store.push_back(systematics_element("zee","Zee subtraction",1,0,0,1,0,kMagenta));
+    //    store.push_back(systematics_element("unfolding","Unfolding uncertainty",0,1,0,1,0,kYellow));
+
+    store.push_back(systematics_element("ESCALEup","Energy scale",1,0,0,1,0,kBlue));
+    store.push_back(systematics_element("ESMEARup","Energy smearing",0,1,0,1,0,kOrange));
+    store.push_back(systematics_element("JECup","JES",1,0,0,0,1,kRed));
+    store.push_back(systematics_element("JERup","JER",0,1,0,0,1,kGreen+2));
+    store.push_back(systematics_element("PUup","Pileup",0,1,0,0,1,kGreen,2));
+    store.push_back(systematics_element("zee","Electron subtraction",1,0,0,1,0,kMagenta));
+    store.push_back(systematics_element("efficiency","Efficiency",0,1,0,1,0,kGreen));
+
+    store.push_back(systematics_element("templateshapeMCpromptdrivenEB","Prompt template shape EB",1,0,0,0,1,kRed,2));
+    store.push_back(systematics_element("templateshapeMCfakedrivenEB","Fake template shape EB",1,0,0,0,1,kBlue,2));
+    store.push_back(systematics_element("templateshapeMCpromptdrivenEE","Prompt template shape EE",1,0,0,0,1,kRed,9));
+    store.push_back(systematics_element("templateshapeMCfakedrivenEE","Fake template shape EE",1,0,0,0,1,kBlue,9));
+    store.push_back(systematics_element("templateshape2frag","Fragmentation effect on template",1,0,0,0,1,kOrange,9));
+    store.push_back(systematics_element("noise_mixing","Event mixing effect on template",1,0,0,0,1,kCyan,9));
+
+    store.push_back(systematics_element("purefitbias","Fit bias",1,0,1,0,0,kGray,2));
     store.push_back(systematics_element("templatestatistics","Template statistics",1,0,0,1,0,kGray));
-    store.push_back(systematics_element("efficiency","Efficiency uncertainty",0,1,0,1,0,kGreen+2)); // to be splitted in different scale factors?
-    store.push_back(systematics_element("unfolding","Unfolding uncertainty",0,1,0,1,0,kYellow));
-    store.push_back(systematics_element("templateshapeMCpromptdrivenEB","Prompt template shape EB",1,0,0,0,1,kRed));
-    store.push_back(systematics_element("templateshapeMCfakedrivenEB","Fake template shape EB",1,0,0,0,1,kBlue));
-    store.push_back(systematics_element("templateshapeMCpromptdrivenEE","Prompt template shape EE",1,0,0,0,1,kRed,kDotted));
-    store.push_back(systematics_element("templateshapeMCfakedrivenEE","Fake template shape EE",1,0,0,0,1,kBlue,kDotted));
-    store.push_back(systematics_element("templateshape2frag","Fragmentation effect on template",1,0,0,0,1,kOrange));
-    store.push_back(systematics_element("JECup","JES up",1,0,0,0,1,kRed+1));
-    store.push_back(systematics_element("JERup","JER up",0,1,0,0,1,kRed+2));
-    store.push_back(systematics_element("ESCALEup","Energy scale up",1,0,0,1,0,kRed+3));
-    store.push_back(systematics_element("ESMEARup","Energy smearing up",0,1,0,1,0,kRed+4));
-    store.push_back(systematics_element("JECdown","JES down",1,0,0,0,1,kRed+1,9));
-    store.push_back(systematics_element("JERdown","JER down",0,1,0,0,1,kRed+2,9));
-    store.push_back(systematics_element("ESCALEdown","Energy scale down",1,0,0,1,0,kRed+3,9));
-    store.push_back(systematics_element("ESMEARdown","Energy smearing down",0,1,0,1,0,kRed+4,9));
-    store.push_back(systematics_element("noise_mixing","Event mixing effect on template",1,0,0,0,1,kCyan));
-    store.push_back(systematics_element("statistic","Statistical uncertainty",1,0,1,0,0,kBlack,kDashed));
-    store.push_back(systematics_element("PUup","PU rew up",0,1,0,0,1,kRed+5));
-    store.push_back(systematics_element("PUdown","PU rew down",0,1,0,0,1,kRed+6));
+
+    store.push_back(systematics_element("statistic","Statistical uncertainty (NOPLOT)",1,0,1,0,0,kBlack,kDashed));
+    store.push_back(systematics_element("PUdown","PU rew down (NOPLOT)",0,1,0,0,1,kRed+6));
+    store.push_back(systematics_element("JECdown","JES down (NOPLOT)",1,0,0,0,1,kRed+1,9));
+    store.push_back(systematics_element("JERdown","JER down (NOPLOT)",0,1,0,0,1,kRed+2,9));
+    store.push_back(systematics_element("ESCALEdown","Energy scale down (NOPLOT)",1,0,0,1,0,kRed+3,9));
+    store.push_back(systematics_element("ESMEARdown","Energy smearing down (NOPLOT)",0,1,0,1,0,kRed+4,9));
   };
   ~systematics_handler(){};
+
+  systematics_element* findname(TString x){
+    for (uint i=0; i<this->store.size(); i++) if (TString(this->store.at(i).name)==x) return &(this->store.at(i));
+    return NULL;
+  }
 
 };
 

@@ -132,6 +132,7 @@ float get_noise_systematic(TString filename, TString diffvariable, TString split
 void get_roodset_from_ttree(TDirectoryFile *f, TString treename, RooDataSet* &roodset);
 float get_ttree_sumofweights(TDirectoryFile *f, TString treename);
 TH1F* AddTHInQuadrature(std::vector<TH1F*> vector, TString name);
+TPad* newPad(int number, TString name, float x1, float y1, float x2, float y2);
 
 RooRealVar *roovar1=NULL;
 RooRealVar *roovar2=NULL;
@@ -2316,7 +2317,7 @@ TH1F* run_unfolding(RooUnfoldResponse *resp, TH1F *folded, int niterations = 4){
   return unfolded;
 };
 
-void SetFormat(TH1F *h, int color=kBlack, int markerstyle=20, int linestyle=1, int linewidth=2){
+void SetFormat(TH1F *h, int color=kBlack, int linestyle=1, int markerstyle=20, int linewidth=2){
   h->SetLineColor(color);
   h->SetMarkerColor(color);
   h->SetMarkerStyle(markerstyle);
@@ -2863,8 +2864,8 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
   xsec_centralvalue->GetXaxis()->SetTitle(get_unit(diffvariable));
   xsec_centralvalue->GetXaxis()->SetTitleSize(0.04);
   xsec_centralvalue->SetMinimum(0);
-  SetFormat(xsec_centralvalue_raw,kRed,20,kDotted);
-  SetFormat(xsec_centralvalue,kBlack,20);
+  SetFormat(xsec_centralvalue_raw,kRed,kDotted,20);
+  SetFormat(xsec_centralvalue,kBlack,1,20);
   xsec_centralvalue->Draw("e1");
   xsec_centralvalue_raw->Draw("e1 same");
   xsec_centralvalue->Draw("e1 same");
@@ -2918,7 +2919,7 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
     systplot_tot->SetStats(0);
     systplot_tot->SetTitle(Form("Uncertainties on cross-section - %s category",splitting.Data()));
     systplot_tot->SetMinimum(0);
-    SetFormat(systplot_tot,kBlack,20,kDashed);
+    SetFormat(systplot_tot,kBlack,1,20);
 
     systplot_tot->Draw();
 
@@ -2927,7 +2928,7 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
     for (std::map<TString,TH1F*>::const_iterator it = systplots.begin(); it!=systplots.end(); it++){
       if (splitting=="EEEE") if (it->first=="templateshapeMCpromptdrivenEB" || it->first=="templateshapeMCfakedrivenEB") continue;
       if (splitting=="EBEB") if (it->first=="templateshapeMCpromptdrivenEE" || it->first=="templateshapeMCfakedrivenEE") continue;
-      SetFormat(it->second,map_systematics_list.at(it->first).color);
+      SetFormat(it->second,map_systematics_list.at(it->first).color,map_systematics_list.at(it->first).style);
       it->second->Draw("same");
       legsystplot->AddEntry(it->second,map_systematics_list.at(it->first).name.Data(),"l");
     }
@@ -3203,6 +3204,7 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
     std::map<TString,TH1F*> histo_uncorrelated_allcat;
     for (std::map<TString,TH1F*>::iterator it = toadd_uncorrelated[0].begin(); it!=toadd_uncorrelated[0].end(); it++){
       TString k = it->first;
+      if (map_systematics_list[k].title.Contains("NOPLOT")) continue;
       std::vector<TH1F*> toadd_uncorrelated_allcat;
       for (int i=0; i<n_cats; i++) toadd_uncorrelated_allcat.push_back(toadd_uncorrelated[i].at(k));
       histo_uncorrelated_allcat[k] = AddTHInQuadrature(toadd_uncorrelated_allcat,Form("%s_allcat",toadd_uncorrelated[0][k]->GetName()));  
@@ -3212,6 +3214,7 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
     std::map<TString,TH1F*> histo_1catcorrelated_allcat;
     for (std::map<TString,TH1F*>::iterator it =toadd_1catcorrelated[0].begin(); it!=toadd_1catcorrelated[0].end();it++){
       TString k = it->first;
+      if (map_systematics_list[k].title.Contains("NOPLOT")) continue;
       std::vector<TH1F*> toadd_1catcorrelated_allcat;
       for (int i=0; i<n_cats; i++) toadd_1catcorrelated_allcat.push_back(toadd_1catcorrelated[i][k]);
       histo_1catcorrelated_allcat[k] = AddTHInQuadrature(toadd_1catcorrelated_allcat,Form("%s_allcat",toadd_1catcorrelated[0][k]->GetName()));
@@ -3221,6 +3224,7 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
     std::map<TString,TH1F*> histo_allcatcorrelated_allcat;
     for (std::map<TString,TH1F*>::iterator it =toadd_allcatcorrelated[0].begin(); it!=toadd_allcatcorrelated[0].end();it++){
       TString k = it->first;
+      if (map_systematics_list[k].title.Contains("NOPLOT")) continue;
       histo_allcatcorrelated_allcat[k] = (TH1F*)(toadd_allcatcorrelated[0][k]->Clone(Form("%s_allcat",toadd_allcatcorrelated[0][k]->GetName())));
       histo_allcatcorrelated_allcat[k]->Reset();
       for (int i=0; i<n_cats; i++) histo_allcatcorrelated_allcat[k]->Add(toadd_allcatcorrelated[i][k]);
@@ -3245,34 +3249,47 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
 //    canv3->SaveAs(Form("plots/histo_systsummaryfinal_%s_inclusive.root", diffvariable.Data()));
 //    canv3->SaveAs(Form("plots/histo_systsummaryfinal_%s_inclusive.pdf", diffvariable.Data()));
 
-    TCanvas *canv3b = new TCanvas();
+    TCanvas *canv3b = new TCanvas("systs","systs",1000,600);
     canv3b->cd();
+    newPad(1,"pad1",0,0,0.7,1);
+    newPad(2,"pad2",0.7,0,1,1);
+    canv3b->cd(1);
     systplot_totfinal_inclusive->SetMinimum(0);
+    systplot_totfinal_inclusive->SetStats(0);
+    systplot_totfinal_inclusive->GetYaxis()->SetTitleOffset(1.30);
+    SetFormat(systplot_totfinal_inclusive,kBlack,1);
     systplot_totfinal_inclusive->Draw();
-    histo_uncorrelated_allcat.begin()->second->Draw("same");
-    for (std::map<TString,TH1F*>::iterator it =toadd_1catcorrelated[0].begin(); it!=toadd_1catcorrelated[0].end(); it++){
+    for (std::map<TString,TH1F*>::iterator it =histo_uncorrelated_allcat.begin(); it!=histo_uncorrelated_allcat.end(); it++){
+      TString k = it->first;
+      histo_uncorrelated_allcat[k]->Draw("same");
+    }
+    for (std::map<TString,TH1F*>::iterator it =histo_1catcorrelated_allcat.begin(); it!=histo_1catcorrelated_allcat.end(); it++){
       TString k = it->first;
       histo_1catcorrelated_allcat[k]->Draw("same");
     }
-    for (std::map<TString,TH1F*>::iterator it =toadd_allcatcorrelated[0].begin(); it!=toadd_allcatcorrelated[0].end(); it++){
+    for (std::map<TString,TH1F*>::iterator it =histo_allcatcorrelated_allcat.begin(); it!=histo_allcatcorrelated_allcat.end(); it++){
       TString k = it->first;
       histo_allcatcorrelated_allcat[k]->Draw("same");
     }
-//    TLegend *leg_canv3b = new TLegend(0.6,0.7,0.9,0.9);
-//    leg_canv3b->AddEntry(histo_uncorrelated_allcat,"Fit bias","l");
-//    leg_canv3b->AddEntry(histo_1catcorrelated_allcat[0],"Zee subtraction","l");
-//    leg_canv3b->AddEntry(histo_1catcorrelated_allcat[1],"Template stat. fluctuation","l");
-//    leg_canv3b->AddEntry(histo_1catcorrelated_allcat[2],"Efficiency uncertainty","l");
-//    leg_canv3b->AddEntry(histo_1catcorrelated_allcat[3],"Unfolding uncertainty","l");
-//    leg_canv3b->AddEntry(histo_allcatcorrelated_allcat[0],"Prompt template shape EB","l");
-//    leg_canv3b->AddEntry(histo_allcatcorrelated_allcat[1],"Fakes template shape EB","l");
-//    leg_canv3b->AddEntry(histo_allcatcorrelated_allcat[2],"Prompt template shape EE","l");
-//    leg_canv3b->AddEntry(histo_allcatcorrelated_allcat[3],"Fakes template shape EE","l");
-//    leg_canv3b->AddEntry(histo_allcatcorrelated_allcat[4],"Fragmentation description","l");
-//    leg_canv3b->AddEntry(histo_allcatcorrelated_allcat[5],"Additional noise in evt. mixing","l");
-//    leg_canv3b->AddEntry(systplot_totfinal_inclusive,"Total syst. uncertainty","l");
-//    leg_canv3b->Draw();
     systplot_totfinal_inclusive->GetYaxis()->SetRangeUser(0,systplot_totfinal_inclusive->GetBinContent(systplot_totfinal_inclusive->GetMaximumBin())*1.05);
+    canv3b->cd(2);
+    TLegend *leg_canv3b = new TLegend(0,0,1,1);
+    for (std::map<TString,TH1F*>::iterator it =histo_uncorrelated_allcat.begin(); it!=histo_uncorrelated_allcat.end(); it++){
+      SetFormat(it->second,map_systematics_list[it->first].color,map_systematics_list[it->first].style);
+      leg_canv3b->AddEntry(it->second,map_systematics_list[it->first].title.Data(),"l");
+    }
+    for (std::map<TString,TH1F*>::iterator it =histo_1catcorrelated_allcat.begin(); it!=histo_1catcorrelated_allcat.end(); it++){
+      SetFormat(it->second,map_systematics_list[it->first].color,map_systematics_list[it->first].style);
+      leg_canv3b->AddEntry(it->second,map_systematics_list[it->first].title.Data(),"l");
+    }
+    for (std::map<TString,TH1F*>::iterator it =histo_allcatcorrelated_allcat.begin(); it!=histo_allcatcorrelated_allcat.end(); it++){
+      SetFormat(it->second,map_systematics_list[it->first].color,map_systematics_list[it->first].style);
+      leg_canv3b->AddEntry(it->second,map_systematics_list[it->first].title.Data(),"l");
+    }
+    leg_canv3b->AddEntry(systplot_totfinal_inclusive,"Total syst. uncertainty","l");
+    leg_canv3b->Draw();
+    leg_canv3b->SetTextSize(0.053);
+    leg_canv3b->SetTextAlign(12);
     canv3b->Update();
 
     canv3b->SaveAs(Form("plots/histo_systsummaryfinal_splitted_%s_inclusive.jpg", diffvariable.Data()));
@@ -4719,3 +4736,10 @@ void reweight_signalcontamination(RooDataSet **dset, double target_fraction){
   delete old_dset;
 
 };
+
+TPad* newPad(int number, TString name, float x1, float y1, float x2, float y2){
+  TPad *p = new TPad(name.Data(),name.Data(),x1,y1,x2,y2);
+  p->SetNumber(number);
+  p->Draw();
+  return p;
+}
