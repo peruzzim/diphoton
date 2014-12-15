@@ -11,12 +11,17 @@ void compare_Zsub_4253(){
 
   TFile *f42unf = new TFile("histo_finalxs_fortheorycomp_dphi_42.root");
   TH1F *h42unf = (TH1F*)(f42unf->Get("histo_finalxs_fortheorycomp_dphi"));
+  h42unf->SetMarkerStyle(1);
+  h42unf->SetLineColor(kBlack);
+  h42unf->SetFillColor(kBlack);
+  h42unf->SetMarkerColor(kBlack);
   TH1F *h42unforig = (TH1F*)(h42unf->Clone("histo_finalxs_fortheorycomp_dphi_orig"));
 
   TFile *f53unf = new TFile("histo_finalxs_fortheorycomp_dphi.root");
   TH1F *h53unf = (TH1F*)(f53unf->Get("histo_finalxs_fortheorycomp_dphi"));
-  h53unf->SetMarkerStyle(25);
+  h53unf->SetMarkerStyle(1);
   h53unf->SetLineColor(kRed);
+  h53unf->SetFillColor(kRed);
   h53unf->SetMarkerColor(kRed);
   TH1F *h53unforig = (TH1F*)(h53unf->Clone("histo_finalxs_fortheorycomp_dphi_orig"));
 
@@ -38,11 +43,14 @@ void compare_Zsub_4253(){
     float e = h53unc->GetBinContent(bin+1);
     h53unf->SetBinError(bin+1,x*e);
   }
-  
 
-  h42unf->Draw("E1");
-  h42unforig->Draw("E1 same");
+  h42unforig->SetFillStyle(3018);
+  h53unforig->SetFillStyle(3017);
+
+  h42unforig->Draw("E2");
+  h53unforig->Draw("E2 same");
+  h42unf->Draw("E1 same");
   h53unf->Draw("E1 same");
-  h53unforig->Draw("E1 same");
+
 
 }
