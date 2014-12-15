@@ -104,7 +104,7 @@ void closure_test_unfolding(TString filename_unfmatrix="outphoton/outphoton_effu
       ratio->GetYaxis()->SetRangeUser(0.5,1.5);
       ratio->GetYaxis()->SetTitle("Unfolded / Truth");
       ratio->GetYaxis()->SetTitleOffset(1.25);
-      ratio->GetXaxis()->SetTitle(get_unit(diffvariable));
+      ratio->GetXaxis()->SetTitle(diffvariables_names_list(diffvariable).Data());
 
       outfile->cd();
       ratio->Write();
