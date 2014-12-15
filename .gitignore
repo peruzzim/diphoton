@@ -8,3 +8,5 @@ AutoDict*
 plots*
 RooUnfold-1.1.1
 *.rootmap
+*.pdf
+*.png
