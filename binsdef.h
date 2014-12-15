@@ -289,7 +289,7 @@ class systematics_handler {
     store.push_back(systematics_element("JECup","JES",1,0,0,0,1,kRed));
     store.push_back(systematics_element("JERup","JER",0,1,0,0,1,kGreen+2));
     store.push_back(systematics_element("PUup","Pileup",0,1,0,0,1,kGreen,2));
-    store.push_back(systematics_element("zee","Electron subtraction",1,0,0,1,0,kMagenta));
+    store.push_back(systematics_element("zee","Electron subtraction",1,0,0,0,1,kMagenta));
     store.push_back(systematics_element("efficiency","Efficiency",0,1,0,1,0,kGreen));
 
     store.push_back(systematics_element("templateshapeMCpromptdrivenEB","Prompt template shape EB",1,0,0,0,1,kRed,2));

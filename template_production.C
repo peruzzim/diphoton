@@ -1469,25 +1469,55 @@ std::pair<float,float> template_production_class::getscalefactor_forzeesubtracti
 
   sf*=3048./2475.;
 
+  float sfup = sf;
+  float sfdown = sf;
+
   const float zee_sub_scalefactor_EBEB = 1.2;
   const float zee_sub_scalefactor_EBEB_unc = 0.4;
   const float zee_sub_scalefactor_notEBEB = 1.0;
   const float zee_sub_scalefactor_notEBEB_unc = 0.4;
 
+  // fitted pp purity fraction in Zee events
+  const float purity_EBEB = 8.6542e-01;
+  const float purity_EBEE = 7.9537e-01;
+  const float purity_EEEE = 8.5493e-01;
+
   if (ev_ok_for_dset==0) {
-    sf*=zee_sub_scalefactor_EBEB;
-    sferr=sqrt(pow(sferr,2)+pow(zee_sub_scalefactor_EBEB_unc/zee_sub_scalefactor_EBEB,2));
+    sf     *= zee_sub_scalefactor_EBEB;
+    sfup   *= (zee_sub_scalefactor_EBEB>1) ? zee_sub_scalefactor_EBEB : 1;
+    sfdown *= (zee_sub_scalefactor_EBEB>1) ? 1 : zee_sub_scalefactor_EBEB;
   }
   else if (ev_ok_for_dset==1 || ev_ok_for_dset==2) {
-    sf*=zee_sub_scalefactor_notEBEB;
-    sferr=sqrt(pow(sferr,2)+pow(zee_sub_scalefactor_notEBEB_unc/zee_sub_scalefactor_notEBEB,2));
+    sf     *= zee_sub_scalefactor_notEBEB;
+    sfup   *= (zee_sub_scalefactor_notEBEB>1) ? zee_sub_scalefactor_notEBEB : 1;
+    sfdown *= (zee_sub_scalefactor_notEBEB>1) ? 1 : zee_sub_scalefactor_notEBEB;
   }
 
-  // fitted pp purity fraction in Zee events
-  if (ev_ok_for_dset==0) sf*=8.6542e-01;
-  else if (ev_ok_for_dset==1) sf*=7.9537e-01;
-  else if (ev_ok_for_dset==2) sf*=8.5493e-01;
-  
+
+  if (ev_ok_for_dset==0) {
+    sf*=purity_EBEB;
+    sfup *= (purity_EBEB>1) ? purity_EBEB : 1;
+    sfdown *= (purity_EBEB>1) ? 1 : purity_EBEB;
+  }
+  else if (ev_ok_for_dset==1) {
+    sf*=purity_EBEE;
+    sfup *= (purity_EBEE>1) ? purity_EBEE : 1;
+    sfdown *= (purity_EBEE>1) ? 1 : purity_EBEE;
+  }
+  else if (ev_ok_for_dset==2) {
+    sf*=purity_EEEE;
+    sfup *= (purity_EEEE>1) ? purity_EEEE : 1;
+    sfdown *= (purity_EEEE>1) ? 1 : purity_EEEE;
+  }
+
+
+  sfdown = fabs(1-sfdown);
+  sfup = fabs(sfup-1);
+  sferr = (sfup>sfdown) ? sfup : sfdown;
+
+  if (ev_ok_for_dset==0) sferr=sqrt(pow(sferr,2)+pow(zee_sub_scalefactor_EBEB_unc/zee_sub_scalefactor_EBEB,2));
+  else if (ev_ok_for_dset==1 || ev_ok_for_dset==2) sferr=sqrt(pow(sferr,2)+pow(zee_sub_scalefactor_notEBEB_unc/zee_sub_scalefactor_notEBEB,2));
+
   return std::pair<float,float>(sf,sferr);
   
 };

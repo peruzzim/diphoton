@@ -7,8 +7,6 @@ bool force_ultralowstatcat = 0;
 
 #include <assert.h>
 
-#include "tdrstyle.C"
-#include "CMS_lumi.C"
 #include "myStyleMacro.C"
 
 #include "binsdef.h"
@@ -3308,6 +3306,22 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
     canv3b->SaveAs(Form("plots/histo_systsummaryfinal_splitted_%s_inclusive.png", diffvariable.Data()));
     canv3b->SaveAs(Form("plots/histo_systsummaryfinal_splitted_%s_inclusive.root", diffvariable.Data()));
     canv3b->SaveAs(Form("plots/histo_systsummaryfinal_splitted_%s_inclusive.pdf", diffvariable.Data()));
+
+    TFile *f3b = new TFile(Form("plots/histo_systsummaryfinal_individual_%s_inclusive.root",diffvariable.Data()),"recreate");
+    f3b->cd();
+    for (std::map<TString,TH1F*>::iterator it =histo_uncorrelated_allcat.begin(); it!=histo_uncorrelated_allcat.end(); it++){
+      TString k = it->first;
+      histo_uncorrelated_allcat[k]->Write();
+    }
+    for (std::map<TString,TH1F*>::iterator it =histo_1catcorrelated_allcat.begin(); it!=histo_1catcorrelated_allcat.end(); it++){
+      TString k = it->first;
+      histo_1catcorrelated_allcat[k]->Write();
+    }
+    for (std::map<TString,TH1F*>::iterator it =histo_allcatcorrelated_allcat.begin(); it!=histo_allcatcorrelated_allcat.end(); it++){
+      TString k = it->first;
+      histo_allcatcorrelated_allcat[k]->Write();
+    }
+    f3b->Close();
 
 
     TCanvas *canv4 = new TCanvas();
