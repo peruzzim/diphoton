@@ -18,6 +18,8 @@ const int niter = 4;
 bool doplots = false;
 bool doprintplots = false;
 bool docmsstyle = false;
+TString testname = "Unfolding closure test";
+TString filename = "closure_unfolding";
 
 TH1F* run_unfolding(RooUnfoldResponse *resp, TH1F *folded, int niterations, TH1F *thist){
   RooUnfoldBayes *unfmethod = new RooUnfoldBayes(resp,folded,niterations);
@@ -47,7 +49,7 @@ void closure_test_unfolding(TString filename_unfmatrix="outphoton/outphoton_effu
 
   if (file_unfmatrix->IsZombie() || file_foldedhisto->IsZombie() || file_truehisto->IsZombie()) return;
 
-  TFile *outfile = new TFile("closure_test_unfolding.root","recreate");
+  TFile *outfile = new TFile(Form("%s.root",filename.Data()),"recreate");
 
   for (std::vector<TString>::const_iterator it = diffvariables_list.begin(); it!=diffvariables_list.end(); it++){
 
@@ -95,7 +97,9 @@ void closure_test_unfolding(TString filename_unfmatrix="outphoton/outphoton_effu
       ratio->Divide(thist);
       ratio->SetLineColor(kBlack);
       ratio->SetLineWidth(2);
-      ratio->SetTitle(Form("Unfolding closure test on %s",diffvariables_names_list(diffvariable).Data()));
+      TString title = Form("%s on %s",testname.Data(),diffvariables_names_list(diffvariable).Data());
+      if (reg!="inclusive") title.Append(Form(" - %s",reg.Data()));
+      ratio->SetTitle(title.Data());
       ratio->SetStats(0);
       ratio->GetYaxis()->SetRangeUser(0.5,1.5);
       ratio->GetYaxis()->SetTitle("Unfolded / Truth");
@@ -113,9 +117,9 @@ void closure_test_unfolding(TString filename_unfmatrix="outphoton/outphoton_effu
 	line->Draw("same");
 
 	if (doprintplots){
-	  c->SaveAs(Form("plots/closure_unfolding_%s_%s.pdf",diffvariable.Data(),reg.Data()));
-	  c->SaveAs(Form("plots/closure_unfolding_%s_%s.png",diffvariable.Data(),reg.Data()));
-	  c->SaveAs(Form("plots/closure_unfolding_%s_%s.root",diffvariable.Data(),reg.Data()));
+	  c->SaveAs(Form("plots/%s_%s_%s.pdf", filename.Data(),diffvariable.Data(),reg.Data()));
+	  c->SaveAs(Form("plots/%s_%s_%s.png", filename.Data(),diffvariable.Data(),reg.Data()));
+	  c->SaveAs(Form("plots/%s_%s_%s.root",filename.Data(),diffvariable.Data(),reg.Data()));
 	}
 	
       }
