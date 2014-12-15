@@ -2837,10 +2837,12 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
   leg->SetFillColor(kWhite);
   leg->Draw();
 
-  TLatex a;
-  a.SetNDC();
-  a.SetTextSize(0.03);
-  a.DrawLatex(0.13,0.83,"#splitline{CMS Internal}{#sqrt{s} = 7 TeV L = 5.0 fb^{-1}}");
+//  TLatex a;
+//  a.SetNDC();
+//  a.SetTextSize(0.03);
+//  a.DrawLatex(0.13,0.83,"#splitline{CMS Internal}{#sqrt{s} = 7 TeV L = 5.0 fb^{-1}}");
+
+  addCMS(output_canv);
 
   output_canv->Update();
   output_canv->SaveAs(Form("plots/plot_purity_%s_%s.png", diffvariable.Data(),splitting.Data()));
@@ -3297,6 +3299,9 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
     leg_canv3b->Draw();
     leg_canv3b->SetTextSize(0.053);
     leg_canv3b->SetTextAlign(12);
+
+    addCMS((TPad*)(canv3b->GetPad(1)),33);
+
     canv3b->Update();
 
     canv3b->SaveAs(Form("plots/histo_systsummaryfinal_splitted_%s_inclusive.jpg", diffvariable.Data()));

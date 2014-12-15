@@ -6,11 +6,15 @@
 #include "TStyle.h"
 #include "TPad.h"
 
+#include "myStyleMacro.C"
+
 bool dolog = false;
 
 float scale_sherpa = 16.2/13.8; // = +17%
 
 void make_sherpa_predictions_(TString filename = "outphoton/outphoton_effunf_sig_Default.root", TString var="", bool withdata = false, bool with42data = false){
+
+  setCMSStyle();
 
   TString lstring = dolog ? "LOG" : "";
 
@@ -92,6 +96,9 @@ void make_sherpa_predictions_(TString filename = "outphoton/outphoton_effunf_sig
 
       hi->GetYaxis()->SetRangeUser(0,1.3*max);
       if (dolog) hi->GetYaxis()->UnZoom();
+
+      addCMS(c);
+
       c->Update();
       c->SaveAs( Form("plots/SHERPApred_%s%s_withdata.pdf",it->Data(),lstring.Data()));
       c->SaveAs( Form("plots/SHERPApred_%s%s_withdata.root",it->Data(),lstring.Data()));      

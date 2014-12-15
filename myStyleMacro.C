@@ -1,6 +1,7 @@
 #include <TROOT.h>
 #include <TStyle.h>
 #include "TCanvas.h"
+#include "TPad.h"
 #include "TH1F.h"
 #include "TH1.h"
 #include "TLatex.h"
@@ -9,6 +10,9 @@
 #include "TGraphErrors.h"
 #include "TFrame.h"
 #include "TFile.h"
+
+#include "tdrstyle.C"
+#include "CMS_lumi.C"
 
 void setCMSStyle()
 {
@@ -40,7 +44,7 @@ void setCMSStyle()
   //  example_plot( iPeriod, 33 );  // right-aligned  
 }
 
-void addCMS(TCanvas *canv, int iPeriod = 1, int iPos = 11)
+void addCMS(TPad *canv, int iPos = 11, int iPeriod = 1)
 { 
   CMS_lumi( canv, iPeriod, iPos );
   canv->Update();
