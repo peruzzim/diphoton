@@ -44,8 +44,8 @@ void compare_Zsub_4253(){
     h53unf->SetBinError(bin+1,x*e);
   }
 
-  h42unforig->SetFillStyle(3018);
-  h53unforig->SetFillStyle(3017);
+  h42unforig->SetFillStyle(3004);
+  h53unforig->SetFillStyle(3005);
 
   h42unforig->Draw("E2");
   h53unforig->Draw("E2 same");

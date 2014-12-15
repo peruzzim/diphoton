@@ -44,8 +44,9 @@ void make_sherpa_predictions_(TString filename = "outphoton/outphoton_effunf_sig
     for (int i=0; i<hi->GetNbinsX(); i++) hi->SetBinError(i+1,0);
 
     hi->SetLineColor(kBlue);
-    hi->SetFillColor(kBlue);
-    hi->SetFillStyle(3001);
+    hi->SetLineWidth(2);
+    //    hi->SetFillColor(kBlue);
+    //    hi->SetFillStyle(3001);
     hi->SetStats(kFALSE);
     hi->SetMinimum(0);
     hi->SetName("SHERPApred");
