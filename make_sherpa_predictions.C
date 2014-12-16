@@ -1,6 +1,7 @@
 #include "binsdef.h"
 #include "TFile.h"
 #include "TH1F.h"
+#include "TGraphAsymmErrors.h"
 #include "TF1.h"
 #include <iostream>
 #include "TCanvas.h"
@@ -12,7 +13,7 @@
 bool dolog = false;
 
 float scale_sherpa = 16.2/13.8; // = +17%
-
+bool dosherpaerrors = false;
 bool doratio4253 = false;
 
 TPad* newPad(int number, TString name, float x1, float y1, float x2, float y2){
@@ -66,6 +67,33 @@ void make_sherpa_predictions_(TString filename = "outphoton/outphoton_effunf_sig
     if (scale_sherpa!=1) hi->Scale(scale_sherpa);
 
 
+    TH1F *hiup = (TH1F*)(hi->Clone("hiup")); // TODO
+    hiup->Scale(0); // TODO
+    TH1F *hidown = (TH1F*)(hi->Clone("hidown")); // TODO
+    hidown->Scale(0); // TODO
+    TGraphAsymmErrors *hierr = NULL;
+    if (dosherpaerrors){
+      int nbins = hi->GetNbinsX();
+      Double_t x[100];
+      Double_t y[100];
+      Double_t exup[100];
+      Double_t exdown[100];
+      Double_t eyup[100];
+      Double_t eydown[100];
+      for (int bin=0; bin<nbins; bin++){
+	x[bin]=hi->GetBinCenter(bin+1);
+	y[bin]=hi->GetBinContent(bin+1);
+	eyup[bin]=hiup->GetBinContent(bin+1);
+	eydown[bin]=hidown->GetBinContent(bin+1);
+	exup[bin]=hi->GetBinLowEdge(bin+2)-hi->GetBinCenter(bin+1);
+	exdown[bin]=-hi->GetBinLowEdge(bin+1)+hi->GetBinCenter(bin+1);
+      }
+      hierr = new TGraphAsymmErrors(nbins,x,y,exdown,exup,eydown,eyup);
+      hierr->SetFillColor(kBlue);
+      hierr->SetFillStyle(3005);
+    }
+
+
     TString unit = diffvariables_units_list(diffvariable);
     hi->GetXaxis()->SetTitle(Form("%s %s",diffvariables_names_list(diffvariable).Data(),unit!=TString("") ? (TString("(").Append(unit.Append(")"))).Data() : TString("").Data()));
     hi->GetYaxis()->SetTitle(Form("d#sigma/d%s (pb/%s)",diffvariables_names_list(diffvariable).Data(),unit!=TString("") ? (TString("(").Append(unit.Append(")"))).Data() : TString("1").Data()));
@@ -84,6 +112,7 @@ void make_sherpa_predictions_(TString filename = "outphoton/outphoton_effunf_sig
 
     hi->Draw();
     if (dolog) hi->GetYaxis()->UnZoom();
+    if (dosherpaerrors) hierr->Draw("2 same");
     c->Update();
     c->SaveAs( Form("plots/SHERPApred_%s%s.pdf",it->Data(),lstring.Data()));
     c->SaveAs( Form("plots/SHERPApred_%s%s.png",it->Data(),lstring.Data()));
@@ -154,6 +183,21 @@ void make_sherpa_predictions_(TString filename = "outphoton/outphoton_effunf_sig
       TF1 *line = new TF1("line","1",ratio->GetXaxis()->GetXmin(),ratio->GetXaxis()->GetXmax());
       line->SetLineColor(kBlue);
       line->Draw("same");
+      if (dosherpaerrors){
+	TGraphAsymmErrors *rhierr = (TGraphAsymmErrors*)(hierr->Clone("rhierr"));
+	for (int i=0; i<ratio->GetNbinsX(); i++){
+	  Double_t x;
+	  Double_t y;
+	  rhierr->GetPoint(i,x,y);
+	  rhierr->SetPoint(i,x,1);
+	  float eyl = rhierr->GetErrorYlow(i);
+	  float eyh = rhierr->GetErrorYhigh(i);
+	  rhierr->SetPointEYlow(i,eyl/y);
+	  rhierr->SetPointEYhigh(i,eyh/y);
+	}
+	rhierr->Draw("2 same");
+      }
+
       if (ratio2) {
 	if (!doratio4253) ratio2->Draw("E1 same");
 	else {
