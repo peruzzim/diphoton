@@ -7,8 +7,9 @@
 #include "TCanvas.h"
 #include "TStyle.h"
 #include "TPad.h"
-
 #include "myStyleMacro.C"
+
+using namespace std;
 
 bool dolog = false;
 
@@ -75,19 +76,35 @@ public:
     }
   }
 
-  theorypred(TH1F *h, TH1F *hup = NULL, TH1F *hdown = NULL){
+  theorypred(TH1F *h, TH1F *hup = NULL, TH1F *hdown = NULL, TH1F *forbinning = NULL){
     gr=NULL;
     grnoerr=NULL;
     grratio=NULL;
     histo=NULL;
-    import(h,hup,hdown);
+    import(h,hup,hdown,forbinning);
   };
 
-  void import(TH1F *h, TH1F *hup = NULL, TH1F *hdown = NULL){
+  void import(TH1F *h, TH1F *hup = NULL, TH1F *hdown = NULL, TH1F *forbinning = NULL){
 
     assert (h);
     if (!hup) hup=h;
     if (!hdown) hdown=h;
+
+    if (forbinning){
+      TH1F *temp = (TH1F*)(forbinning->Clone("temp"));
+      temp->Reset();
+      TH1F *th = (TH1F*)(temp->Clone("h"));
+      TH1F *thup = (TH1F*)(temp->Clone("hup"));
+      TH1F *thdown = (TH1F*)(temp->Clone("hdown"));
+      for (int i=0; i<forbinning->GetNbinsX(); i++){
+	th->SetBinContent(i+1,h->GetBinContent(i+1));
+	thup->SetBinContent(i+1,hup->GetBinContent(i+1));
+	thdown->SetBinContent(i+1,hdown->GetBinContent(i+1));
+      }
+      h=th;
+      hup=thup;
+      hdown=thdown;
+    }
 
     int nbins = h->GetNbinsX();
     Double_t x[100];
@@ -146,6 +163,18 @@ public:
 
 };
 
+float getint(TH1F *h){
+  float sum=0;
+  for (int i=0; i<h->GetNbinsX(); i++) sum+=h->GetBinContent(i+1)*h->GetBinWidth(i+1);
+  return sum;
+};
+
+void printint(TString title, TH1F *h, TH1F *hup, TH1F *hdown){
+
+  cout << title.Data() << " " << getint(h) << " + " << getint(hup)-getint(h) << " - " << getint(h)-getint(hdown) << endl;
+
+}
+
 void make_sherpa_predictions_(TString var="", bool withdata = false, bool with42data = false){
 
   setCMSStyle();
@@ -155,10 +184,19 @@ void make_sherpa_predictions_(TString var="", bool withdata = false, bool with42
   //  setTDRStyle();
   gStyle->SetOptLogy(dolog);
 
+
   for (std::vector<TString>::const_iterator it = diffvariables_list.begin(); it!=diffvariables_list.end(); it++){
 
     if (var!="" && var!=*it) continue;
     TString diffvariable = *it;
+
+  TFile *fdata = new TFile(Form("plots/histo_finalxs_fortheorycomp_%s.root",it->Data()),"read");
+  TH1F *forbinning;
+  // UGLY HACK!!!
+  {
+  TH1F *hdata = (TH1F*)(fdata->Get(Form("histo_finalxs_fortheorycomp_%s",it->Data())));
+  forbinning = hdata;
+  }
 
     TString unit = diffvariables_units_list(diffvariable);
     TString xtitle = get_unit(diffvariable);
@@ -176,17 +214,19 @@ void make_sherpa_predictions_(TString var="", bool withdata = false, bool with42
     f->GetObject(Form("Sherpa_MidPoint_%s",it->Data()),hi);
     f->GetObject(Form("Sherpa_ScaleEnveloppeUp_%s",it->Data()),hiup);
     f->GetObject(Form("Sherpa_ScaleEnveloppeDown_%s",it->Data()),hidown);
+    if (!hi) continue;
     if (scale_sherpa!=1) {
       hi->Scale(scale_sherpa);
       hiup->Scale(scale_sherpa);
       hidown->Scale(scale_sherpa);
     }
+    printint("SHERPA",hi,hiup,hidown);
     assert (hi);
     assert (hiup);
     assert (hidown);
     max = hi->GetMaximum();
     hi->GetYaxis()->SetRangeUser(0,1.3*max);
-    sherpa = new theorypred(hi,hiup,hidown);
+    sherpa = new theorypred(hi,hiup,hidown,forbinning);
     sherpa->setcolorstyle(kBlue,3005);
     }
 
@@ -206,12 +246,13 @@ void make_sherpa_predictions_(TString var="", bool withdata = false, bool with42
       hiup->Scale(scale_amcatnlo);
       hidown->Scale(scale_amcatnlo);
     }
+    printint("aMCatNLO",hi,hiup,hidown);
     assert (hi);
     assert (hiup);
     assert (hidown);
     max = hi->GetMaximum();
     hi->GetYaxis()->SetRangeUser(0,1.3*max);
-    amcatnlo = new theorypred(hi,hiup,hidown);
+    amcatnlo = new theorypred(hi,hiup,hidown,forbinning);
     amcatnlo->setcolorstyle(kRed,3004);
     }
 
@@ -232,12 +273,10 @@ void make_sherpa_predictions_(TString var="", bool withdata = false, bool with42
     amcatnlo->grnoerr->Draw("E same");
     amcatnlo->gr->Draw("2 same");
     c->Update();
-    c->SaveAs( Form("plots/SHERPApred_%s%s.pdf",it->Data(),lstring.Data()));
-    c->SaveAs( Form("plots/SHERPApred_%s%s.png",it->Data(),lstring.Data()));
-    c->SaveAs( Form("plots/SHERPApred_%s%s.root",it->Data(),lstring.Data()));
+    c->SaveAs( Form("theory/SHERPApred_%s%s.pdf",it->Data(),lstring.Data()));
+    c->SaveAs( Form("theory/SHERPApred_%s%s.png",it->Data(),lstring.Data()));
+    c->SaveAs( Form("theory/SHERPApred_%s%s.root",it->Data(),lstring.Data()));
 
-
-    TFile *fdata = new TFile(Form("plots/histo_finalxs_fortheorycomp_%s.root",it->Data()),"read");
 
     if (withdata && !(fdata->IsZombie())){
 
@@ -365,8 +404,8 @@ void make_sherpa_predictions_(TString var="", bool withdata = false, bool with42
 
       
       c->Update();
-      c->SaveAs( Form("plots/SHERPApred_%s%s_withdata.pdf",it->Data(),lstring.Data()));
-      c->SaveAs( Form("plots/SHERPApred_%s%s_withdata.root",it->Data(),lstring.Data()));      
+      c->SaveAs( Form("theory/SHERPApred_%s%s_withdata.pdf",it->Data(),lstring.Data()));
+      c->SaveAs( Form("theory/SHERPApred_%s%s_withdata.root",it->Data(),lstring.Data()));      
     }
 
 
