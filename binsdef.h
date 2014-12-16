@@ -282,7 +282,7 @@ class systematics_handler {
   std::vector<systematics_element> store;
 
   systematics_handler(){
-    //    store.push_back(systematics_element("unfolding","Unfolding uncertainty",0,1,0,0,1,kYellow));
+    store.push_back(systematics_element("unfolding","Unfolding model",0,1,0,0,1,kBlack,9));
     store.push_back(systematics_element("ESCALEup","Energy scale",1,0,0,1,0,kBlue));
     store.push_back(systematics_element("ESMEARup","Energy smearing",0,1,0,1,0,kOrange));
     store.push_back(systematics_element("JECup","JES",1,0,0,0,1,kRed));
