@@ -180,7 +180,15 @@ float* diffvariables_binsdef_list(TString diffvariable){
 
 const char* get_unit(TString dvar){
   TString unit = diffvariables_units_list(dvar);
-  TString out = TString(Form("%s %s",diffvariables_names_list(dvar).Data(),unit!=TString("") ? (TString("(").Append(unit.Append(")"))).Data() : TString("").Data())).Data();
+  TString out = diffvariables_names_list(dvar).Data();
+  if (unit!="") out.Append(Form(" (%s) ",unit.Data()));
+  return out.Data();
+};
+const char* get_dsigma_unit(TString dvar){
+  TString unit = diffvariables_units_list(dvar);
+  TString out = Form("d#sigma/d%s",diffvariables_names_list(dvar).Data());
+  if (unit=="") unit="1";
+  out.Append(Form(" (pb/%s) ",unit.Data()));
   return out.Data();
 };
 
