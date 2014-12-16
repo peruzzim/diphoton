@@ -13,6 +13,8 @@ bool dolog = false;
 
 float scale_sherpa = 16.2/13.8; // = +17%
 
+bool doratio4253 = false;
+
 TPad* newPad(int number, TString name, float x1, float y1, float x2, float y2){
   TPad *p = new TPad(name.Data(),name.Data(),x1,y1,x2,y2);
   p->SetNumber(number);
@@ -93,8 +95,10 @@ void make_sherpa_predictions_(TString filename = "outphoton/outphoton_effunf_sig
 
 	TFile *fdata42 = new TFile(Form("plots_smp13001/histo_finalxs_fortheorycomp_%s.root",it->Data()),"read");
 
+	TH1F *hdata42 = NULL;
+
       if (with42data && !(fdata42->IsZombie())){
-	TH1F *hdata42 = (TH1F*)(fdata42->Get(Form("histo_finalxs_fortheorycomp_%s",it->Data())));
+	hdata42 = (TH1F*)(fdata42->Get(Form("histo_finalxs_fortheorycomp_%s",it->Data())));
 	hdata42->SetMarkerStyle(25);	
 	hdata42->SetMarkerColor(kRed);
 	hdata42->SetLineColor(kRed);
@@ -118,13 +122,28 @@ void make_sherpa_predictions_(TString filename = "outphoton/outphoton_effunf_sig
       TH1F *ratio = (TH1F*)(hdata->Clone("ratio"));
       ratio->Divide(hi);
       ratio->SetMarkerStyle(1);
-      ratio->GetYaxis()->SetTitle("Data / SHERPA");
+      ratio->GetYaxis()->SetTitle(!doratio4253 ? "Data / SHERPA" : "53X / 42X");
       ratio->GetXaxis()->SetTitle("");
       ratio->GetXaxis()->SetLabelSize(0.09);
       ratio->GetYaxis()->SetTitleSize(0.12);
       ratio->GetYaxis()->SetTitleOffset(0.5);
       ratio->GetYaxis()->SetLabelSize(0.09);
 
+      TH1F *ratio2 = NULL;
+
+      if (with42data && !(fdata42->IsZombie())){
+	ratio2 = (TH1F*)(ratio->Clone("ratio2"));
+	ratio2->SetLineColor(kRed);
+	ratio2->SetMarkerColor(kRed);
+	ratio2->Reset();
+	ratio2->Divide(hdata42,hi,1,1);
+	if (doratio4253){
+	TH1F *ratio3 = (TH1F*)(ratio2->Clone("ratio3"));
+	for (int i=0; i<ratio3->GetNbinsX(); i++) ratio3->SetBinError(i+1,0);
+	ratio->Divide(ratio3);
+	ratio2->Divide(ratio3);
+	}
+      }
 
       addCMS((TPad*)(c->GetPad(1)));
 
@@ -135,6 +154,13 @@ void make_sherpa_predictions_(TString filename = "outphoton/outphoton_effunf_sig
       TF1 *line = new TF1("line","1",ratio->GetXaxis()->GetXmin(),ratio->GetXaxis()->GetXmax());
       line->SetLineColor(kBlue);
       line->Draw("same");
+      if (ratio2) {
+	if (!doratio4253) ratio2->Draw("E1 same");
+	else {
+	  ratio2->SetFillColorAlpha(kRed,0.5);
+	  ratio2->Draw("E2 same");
+	}
+      }
       ratio->Draw("E1 same");
 
       c->Update();
