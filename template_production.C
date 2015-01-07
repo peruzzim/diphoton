@@ -1065,7 +1065,12 @@ void template_production_class::Loop(int maxevents)
 	  if (effunf_dotreeforsyst=="efficiency") sf*=(1+sferr);
 	  if (reco_in_acc_local && gen_in_acc_local) responsematrix_effunf[get_name_responsematrix_effunf(event_ok_for_dataset_local,*diffvariable)].hmatched->Fill(mydiff_reco[*diffvariable],mydiff_gen[*diffvariable],weight*sf);
 	  if (reco_in_acc_local) responsematrix_effunf[get_name_responsematrix_effunf(event_ok_for_dataset_local,*diffvariable)].hreco->Fill(mydiff_reco[*diffvariable],weight*sf);
-	  if (gen_in_acc_local) responsematrix_effunf[get_name_responsematrix_effunf(event_ok_for_dataset_local_gen,*diffvariable)].htruth->Fill(mydiff_gen[*diffvariable],weight);
+	  if (gen_in_acc_local) {
+	    //	    cout << diffvariable->Data() << " " << mydiff_gen[*diffvariable] << " " << weight << endl;
+	    responsematrix_effunf[get_name_responsematrix_effunf(event_ok_for_dataset_local_gen,*diffvariable)].htruth->Fill(mydiff_gen[*diffvariable],weight);
+	    for (uint k=0; k<n_scalevar; k++) responsematrix_effunf[get_name_responsematrix_effunf(event_ok_for_dataset_local_gen,*diffvariable)].htruth_scalevar->at(k)->Fill(mydiff_gen[*diffvariable],weight*event_luminormfactor_scalevar->at(k)/event_luminormfactor);
+	    for (uint k=0; k<n_pdfvar; k++) responsematrix_effunf[get_name_responsematrix_effunf(event_ok_for_dataset_local_gen,*diffvariable)].htruth_pdfvar->at(k)->Fill(mydiff_gen[*diffvariable],weight*event_luminormfactor_pdfvar->at(k)/event_luminormfactor);
+	  }
 	}
 
       }
@@ -1090,7 +1095,7 @@ void template_production_class::Loop(int maxevents)
 
 #endif
 
-void template_production(TString filename="input.root", TString mode="", bool isdata=1, const char* outfile="out.root", TString differentialvariable="photoniso", int maxevents=-1,bool do_event_mixing=false,TString filenameEXTRA="",TString effunf_dotreeforsyst="Default"){
+void template_production(TString filename="input.root", TString mode="", bool isdata=1, const char* outfile="out.root", TString differentialvariable="photoniso", int maxevents=-1,bool do_event_mixing=false,TString filenameEXTRA="",TString effunf_dotreeforsyst="Default", uint n_scalevar=0, uint n_pdfvar=0){
   
   TFile *outF = TFile::Open(outfile,"recreate");
   outF->Close();
@@ -1167,7 +1172,7 @@ void template_production(TString filename="input.root", TString mode="", bool is
   
   template_production_class *temp = new template_production_class(t);
   temp->outputfilename=outfile;
-  temp->Setup(isdata,mode,differentialvariable,do_event_mixing);
+  temp->Setup(isdata,mode,differentialvariable,do_event_mixing,n_scalevar,n_pdfvar);
   temp->inputfilename=filename;
   temp->inputfilenameEXTRA=filenameEXTRA;
   temp->effunf_dotreeforsyst=effunf_dotreeforsyst;

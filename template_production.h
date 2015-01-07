@@ -51,10 +51,14 @@ bool do_scan_cone = false;
 using namespace std;
 using namespace RooFit;
 
+typedef unsigned int uint;
+
 typedef struct {
   TH1F *htruth;
   TH1F *hreco;
   TH2F *hmatched;
+  vector<TH1F*> *htruth_scalevar;
+  vector<TH1F*> *htruth_pdfvar;
 } roounfoldmatrices_struct;
 
 class template_production_class {
@@ -70,6 +74,8 @@ public :
    UInt_t          event_number;
    Int_t           dataset_id;
    Float_t         event_luminormfactor;
+   vector<float>   *event_luminormfactor_scalevar;
+   vector<float>   *event_luminormfactor_pdfvar;
    Float_t         event_Kfactor;
    Float_t         event_weight;
    Float_t         event_rho;
@@ -189,6 +195,8 @@ public :
    TBranch        *b_event_number;   //!
    TBranch        *b_dataset_id;   //!
    TBranch        *b_event_luminormfactor;   //!
+   TBranch        *b_event_luminormfactor_scalevar;   //!
+   TBranch        *b_event_luminormfactor_pdfvar;   //!
    TBranch        *b_event_Kfactor;   //!
    TBranch        *b_event_weight;   //!
    TBranch        *b_event_rho;   //!
@@ -314,7 +322,7 @@ public :
 
    void     WriteOutput();
 
-   void Setup(Bool_t _isdata, TString _mode, TString _differentialvariable, bool _do_event_mixing);
+   void Setup(Bool_t _isdata, TString _mode, TString _differentialvariable, bool _do_event_mixing, uint _n_scalevar=0, uint _n_pdfvar=0);
 
    TString differentialvariable;
 
@@ -386,6 +394,8 @@ public :
    Bool_t do_event_mixing;
 
    Bool_t isdata;
+   uint n_scalevar;
+   uint n_pdfvar;
 
    TString mode;
 
@@ -466,12 +476,15 @@ template_production_class::template_production_class(TTree *tree)
 
 }
 
-void template_production_class::Setup(Bool_t _isdata, TString _mode, TString _differentialvariable, bool _do_event_mixing){
+void template_production_class::Setup(Bool_t _isdata, TString _mode, TString _differentialvariable, bool _do_event_mixing, uint _n_scalevar, uint _n_pdfvar){
 
   isdata=_isdata;
   mode=_mode;
   differentialvariable=_differentialvariable;
   do_event_mixing=_do_event_mixing;
+
+  n_scalevar=_n_scalevar;
+  n_pdfvar=_n_pdfvar;
 
   Init();
 
@@ -628,6 +641,10 @@ void template_production_class::Setup(Bool_t _isdata, TString _mode, TString _di
       for (int i=0; i<3; i++) {
 	roounfoldmatrices_struct a;
 	a.htruth = new TH1F(Form("htruth_%s_%d",diffvariable->Data(),i),Form("htruth_%s_%d",diffvariable->Data(),i),diffvariables_nbins_list(*diffvariable)-1,diffvariables_binsdef_list(*diffvariable));
+	a.htruth_scalevar = new vector<TH1F*>();
+	a.htruth_pdfvar = new vector<TH1F*>();
+	for (uint j=0; j<n_scalevar; j++) a.htruth_scalevar->push_back((TH1F*)(a.htruth->Clone(Form("htruth_%s_%d_scalevar%d",diffvariable->Data(),i,j))));
+	for (uint j=0; j<n_pdfvar; j++) a.htruth_pdfvar->push_back((TH1F*)(a.htruth->Clone(Form("htruth_%s_%d_pdfvar%d",diffvariable->Data(),i,j))));
 	a.hreco = new TH1F(Form("hreco_%s_%d",diffvariable->Data(),i),Form("hreco_%s_%d",diffvariable->Data(),i),diffvariables_nbins_list(*diffvariable)-1,diffvariables_binsdef_list(*diffvariable));
 	a.hmatched = new TH2F(Form("hmatched_%s_%d",diffvariable->Data(),i),Form("hmatched_%s_%d",diffvariable->Data(),i),diffvariables_nbins_list(*diffvariable)-1,diffvariables_binsdef_list(*diffvariable),diffvariables_nbins_list(*diffvariable)-1,diffvariables_binsdef_list(*diffvariable));
 	responsematrix_effunf[get_name_responsematrix_effunf(i,*diffvariable)] = a;
@@ -688,12 +705,17 @@ void template_production_class::Init()
    fCurrent = -1;
    fChain->SetMakeClass(1);
 
+   event_luminormfactor_scalevar = 0;
+   event_luminormfactor_pdfvar = 0;
+
    fChain->SetBranchAddress("event_fileuuid", &event_fileuuid, &b_event_fileuuid);
    fChain->SetBranchAddress("event_run", &event_run, &b_event_run);
    fChain->SetBranchAddress("event_lumi", &event_lumi, &b_event_lumi);
    fChain->SetBranchAddress("event_number", &event_number, &b_event_number);
    fChain->SetBranchAddress("dataset_id", &dataset_id, &b_dataset_id);
    fChain->SetBranchAddress("event_luminormfactor", &event_luminormfactor, &b_event_luminormfactor);
+   if (n_scalevar>0) fChain->SetBranchAddress("event_luminormfactor_scalevar", &event_luminormfactor_scalevar, &b_event_luminormfactor_scalevar);
+   if (n_pdfvar>0) fChain->SetBranchAddress("event_luminormfactor_pdfvar", &event_luminormfactor_pdfvar, &b_event_luminormfactor_pdfvar);
    fChain->SetBranchAddress("event_Kfactor", &event_Kfactor, &b_event_Kfactor);
    fChain->SetBranchAddress("event_weight", &event_weight, &b_event_weight);
    fChain->SetBranchAddress("event_rho", &event_rho, &b_event_rho);
@@ -899,6 +921,8 @@ void template_production_class::WriteOutput(){
 	a.hreco->Write();
 	a.htruth->Write();
 	a.hmatched->Write();
+	for (uint j=0; j<a.htruth_scalevar->size(); j++) a.htruth_scalevar->at(j)->Write();
+	for (uint j=0; j<a.htruth_pdfvar->size(); j++) a.htruth_pdfvar->at(j)->Write();
 
 	TString newname = a.hreco->GetName();
 	newname.ReplaceAll("hreco_","efficiency_");
@@ -1099,13 +1123,13 @@ Int_t template_production_class::Choose_bin_pt(float pt){
   cuts[index]=9999;
 
   if (pt<cuts[0]){
-    std::cout << "WARNING: called bin choice for out-of-range value " << pt << " cuts[0]=" << cuts[0] << std::endl;
+    if (mode!="effunf") std::cout << "WARNING: called bin choice for out-of-range value pt " << pt << " cuts[0]=" << cuts[0] << std::endl;
     return -999;
   }
 
   for (int i=0; i<index; i++) if ((pt>=cuts[i]) && (pt<cuts[i+1])) return i;
   
-  std::cout << "WARNING: called bin choice for out-of-range value " << pt << std::endl;
+  if (mode!="effunf") std::cout << "WARNING: called bin choice for out-of-range value pt " << pt << std::endl;
   return -999;
 
 
@@ -1128,13 +1152,13 @@ Int_t template_production_class::Choose_bin_eta(float eta, int region){
   cuts[index]=9999;
 
   if (eta<cuts[0]){
-    std::cout << "WARNING: called bin choice for out-of-range value " << eta << " cuts[0]=" << cuts[0] << std::endl;
+    if (mode!="effunf") std::cout << "WARNING: called bin choice for out-of-range value eta " << eta << " cuts[0]=" << cuts[0] << std::endl;
     return -999;
   }
 
   for (int i=0; i<index; i++) if ((eta>=cuts[i]) && (eta<cuts[i+1])) return i;
 
-  std::cout << "WARNING: called bin choice for out-of-range value " << eta << std::endl;
+  if (mode!="effunf") std::cout << "WARNING: called bin choice for out-of-range value eta " << eta << std::endl;
   return -999;
 
 };
