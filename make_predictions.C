@@ -16,7 +16,8 @@ float scale_sherpa = 16.2/13.8; // = +17%
 bool dosherpaerrors = false;
 bool doratio4253 = false;
 
-std::vector<TH1F*> GetMidPointMinMaxFromNDistributions(std::vector<TH1F*> histos);
+std::vector<TH1F*> GetMidPointMinMaxFromNDistributions(std::vector<TH1F*> histos); // for use with CT10 and scale uncertainty
+std::vector<TH1F*> GetRMSMinMaxFromNDistributions(std::vector<TH1F*> histos, TH1F* histo_central); // for use with NNPDF
 
 TPad* newPad(int number, TString name, float x1, float y1, float x2, float y2){
   TPad *p = new TPad(name.Data(),name.Data(),x1,y1,x2,y2);
@@ -239,7 +240,7 @@ std::vector<TH1F*> GetMidPointMinMaxFromNDistributions(std::vector<TH1F*> histos
 
   TH1F *mid = (TH1F*)(histos.at(0)->Clone("mid"));
   mid->Reset();
-  TH1F *down = (TH1F*)(mid->Clone("up"));
+  TH1F *down = (TH1F*)(mid->Clone("down"));
   TH1F *up = (TH1F*)(mid->Clone("up"));
   out.push_back(mid);
   out.push_back(down);
@@ -252,6 +253,32 @@ std::vector<TH1F*> GetMidPointMinMaxFromNDistributions(std::vector<TH1F*> histos
     down->SetBinContent(i+1,c.front());
     up->SetBinContent(i+1,c.back());
     mid->SetBinContent(i+1,(c.back()+c.front())/2);
+  }
+
+  return out;
+
+}
+
+std::vector<TH1F*> GetRMSMinMaxFromNDistributions(std::vector<TH1F*> histos, TH1F* histo_central){
+
+  if (histos.size()<2 || histo_central==0) return std::vector<TH1F*>();
+
+  std::vector<TH1F*> out;
+
+  TH1F *down = (TH1F*)(histo_central->Clone("down"));
+  down->Reset();
+  TH1F *up = (TH1F*)(histo_central->Clone("up"));
+  up->Reset();
+  out.push_back(down);
+  out.push_back(up);
+
+  for (int i=0; i<histo_central->GetNbinsX(); i++){
+    double sum=0;
+    for (uint j=0; j<histos.size(); j++) sum += pow(histos.at(j)->GetBinContent(i+1)-histo_central->GetBinContent(i+1),2);
+    sum /= histos.size()-1;
+    double rms = sqrt(sum);
+    down->SetBinContent(i+1,histo_central->GetBinContent(i+1)-rms);
+    up->SetBinContent(i+1,histo_central->GetBinContent(i+1)+rms);
   }
 
   return out;

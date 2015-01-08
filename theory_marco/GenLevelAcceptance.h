@@ -28,6 +28,10 @@ using namespace std;
 typedef unsigned int uint;
 static const float pi = 3.14159265358979312;
 
+// for aMC@NLO uncertainties
+static const uint n_scalevar = 8;
+static const uint n_pdfvar = 100; // NNPDF replicas
+
 // Fixed size dimensions of array or collections stored in the TTree if any.
 
 class GenLevelAcceptance {
@@ -331,8 +335,8 @@ void GenLevelAcceptance::FillOutput(vector<uint> &passingpho, vector<uint> &pass
   }
   else if (generator==kaMCatNLO){
     event_luminormfactor = event_base_luminormfactor*weight_lhe;
-    for (uint i=0; i<8; i++) event_luminormfactor_scalevar->push_back(event_base_luminormfactor*weights_lhe->at(i+1));
-    for (uint i=0; i<52; i++) event_luminormfactor_pdfvar->push_back(event_base_luminormfactor*weights_lhe->at(i+9));
+    for (uint i=0; i<n_scalevar; i++) event_luminormfactor_scalevar->push_back(event_base_luminormfactor*weights_lhe->at(i+1));
+    for (uint i=0; i<n_pdfvar; i++) event_luminormfactor_pdfvar->push_back(event_base_luminormfactor*weights_lhe->at(i+n_scalevar+1));
   }
   else assert(false);
 
