@@ -139,8 +139,8 @@ public:
     for (int bin=0; bin<nbins; bin++){
       x[bin]=central->GetBinCenter(bin+1);
       y[bin]=central->GetBinContent(bin+1);
-      eyup[bin]=up->GetBinContent(bin+1);
-      eydown[bin]=down->GetBinContent(bin+1);
+      eyup[bin]=up->GetBinContent(bin+1)-central->GetBinContent(bin+1);
+      eydown[bin]=-down->GetBinContent(bin+1)+central->GetBinContent(bin+1);
       exup[bin]=central->GetBinLowEdge(bin+2)-central->GetBinCenter(bin+1);
       exdown[bin]=-central->GetBinLowEdge(bin+1)+central->GetBinCenter(bin+1);
       }
