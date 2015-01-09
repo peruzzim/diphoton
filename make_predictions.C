@@ -12,6 +12,7 @@
 
 bool dolog = false;
 
+//float target_xsec = -1;
 float target_xsec = 16.2;
 
 typedef unsigned int uint;
@@ -158,17 +159,18 @@ public:
   void DivideGraphsByHisto(TH1F *histo){
     for (uint i=0; i<grs.size(); i++){
       if (!(*grs[i])) continue;
-      for (int i=0; i<(*grs[i])->GetN(); i++){
+      assert (histo->GetNbinsX()==(*grs[i])->GetN());
+      for (int bin=0; bin<(*grs[i])->GetN(); bin++){
 	Double_t x;
 	Double_t y;
-	(*grs[i])->GetPoint(i,x,y);
-	float eyl = (*grs[i])->GetErrorYlow(i);
-	float eyh = (*grs[i])->GetErrorYhigh(i);
-	(*grs[i])->SetPoint(i,x,y/histo->GetBinContent(i+1));
-	(*grs[i])->SetPointEYlow(i,eyl/histo->GetBinContent(i+1));
-	(*grs[i])->SetPointEYhigh(i,eyh/histo->GetBinContent(i+1));
+	(*grs[i])->GetPoint(bin,x,y);
+	float eyl = (*grs[i])->GetErrorYlow(bin);
+	float eyh = (*grs[i])->GetErrorYhigh(bin);
+	(*grs[i])->SetPoint(bin,x,y/histo->GetBinContent(bin+1));
+	(*grs[i])->SetPointEYlow(bin,eyl/histo->GetBinContent(bin+1));
+	(*grs[i])->SetPointEYhigh(bin,eyh/histo->GetBinContent(bin+1));
       }
-    } 
+    }
   }
 
 };
@@ -352,6 +354,7 @@ void make_predictions_(TString var="", bool withdata = false){
       hdata->Print();
       max = (max<hdata->GetMaximum()) ? hdata->GetMaximum() : max;
 
+      assert (hi);
       hi->GetYaxis()->SetRangeUser(0,1.3*max);
       if (dolog) hi->GetYaxis()->UnZoom();
 
@@ -363,10 +366,14 @@ void make_predictions_(TString var="", bool withdata = false){
       // pad 2
       {
 
+	cout << "drawing pad 2" << endl;
+
 	prediction sherparel("sherparel",sherpa);
 	sherparel.DivideGraphsByHisto(hdata);
 	prediction amcatnlorel("amcatnlorel",amcatnlo);
 	amcatnlorel.DivideGraphsByHisto(hdata);
+
+	cout << "relative predictions ready" << endl;
 
 	ratio->SetMarkerStyle(1);
 	ratio->GetYaxis()->SetTitle("Theory / Data");
