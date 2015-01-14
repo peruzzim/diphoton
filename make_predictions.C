@@ -12,8 +12,8 @@
 
 bool dolog = false;
 
-//float target_xsec = -1;
-float target_xsec = 16.2;
+float sherpa_kfactor = 1;
+float amcatnlo_kfactor = 1;
 
 typedef unsigned int uint;
 uint n_scalevar_amcatnlo = 8;
@@ -29,6 +29,7 @@ void BringTo1(TGraphAsymmErrors *gr);
 void RemoveErrors(TH1F *h){
   for (int i=0; i<h->GetNbinsX(); i++) h->SetBinError(i+1,0);
 }
+void PrintGraph(TGraphAsymmErrors *gr);
 
 TPad* newPad(int number, TString name, float x1, float y1, float x2, float y2){
   TPad *p = new TPad(name.Data(),name.Data(),x1,y1,x2,y2);
@@ -220,9 +221,9 @@ void make_predictions_(TString var="", bool withdata = false){
     sherpa.RemoveErrors();
     sherpa.MakeDifferential();
     sherpa.Scale(1e-3);
-    if (target_xsec>0) {
-      cout << "APPLY K-FACTOR SHERPA: " << target_xsec/CalcIntegratedCrossSection(sherpa.central,true) << endl;
-      sherpa.Scale(target_xsec/CalcIntegratedCrossSection(sherpa.central,true));
+    if (sherpa_kfactor>0) {
+      cout << "APPLY K-FACTOR SHERPA: " << sherpa_kfactor << endl;
+      sherpa.Scale(sherpa_kfactor);
     }
     cout << "Sherpa integral " << CalcIntegratedCrossSection(sherpa.central,true) << " +" << CalcIntegratedCrossSection(sherpa.up,true)-CalcIntegratedCrossSection(sherpa.central,true) << " " << CalcIntegratedCrossSection(sherpa.down,true)-CalcIntegratedCrossSection(sherpa.central,true) << " pb" << endl;
     }
@@ -305,9 +306,9 @@ void make_predictions_(TString var="", bool withdata = false){
     amcatnlo.RemoveErrors();
     amcatnlo.MakeDifferential();
     amcatnlo.Scale(1e-3);
-    if (target_xsec>0) {
-      cout << "APPLY K-FACTOR aMC@NLO+BOX: " << target_xsec/CalcIntegratedCrossSection(amcatnlo.central,true) << endl;
-      amcatnlo.Scale(target_xsec/CalcIntegratedCrossSection(amcatnlo.central,true));
+    if (amcatnlo_kfactor>0) {
+      cout << "APPLY K-FACTOR aMC@NLO+BOX: " << amcatnlo_kfactor << endl;
+      amcatnlo.Scale(amcatnlo_kfactor);
     }
     cout << "aMC@NLO+BOX integral " << CalcIntegratedCrossSection(amcatnlo.central,true) << " +" << CalcIntegratedCrossSection(amcatnlo.up,true)-CalcIntegratedCrossSection(amcatnlo.central,true) << " " << CalcIntegratedCrossSection(amcatnlo.down,true)-CalcIntegratedCrossSection(amcatnlo.central,true) << " pb" << endl;
     }    
@@ -342,6 +343,9 @@ void make_predictions_(TString var="", bool withdata = false){
     c->SaveAs( Form("theory_marco/pred_%s%s.pdf",it->Data(),lstring.Data()));
     c->SaveAs( Form("theory_marco/pred_%s%s.png",it->Data(),lstring.Data()));
     c->SaveAs( Form("theory_marco/pred_%s%s.root",it->Data(),lstring.Data()));
+
+    cout << "SHERPA:" << endl;
+    PrintGraph(sherpa.gr);
 
     TFile *fdata = new TFile(Form("plots/histo_finalxs_fortheorycomp_%s.root",it->Data()),"read");
 
@@ -569,5 +573,19 @@ void BringTo1(TGraphAsymmErrors *gr){
     gr->SetPoint(i,x,1);
     gr->SetPointEYlow(i,eyl/y);
     gr->SetPointEYhigh(i,eyh/y);
+  }
+}
+
+void PrintGraph(TGraphAsymmErrors *gr){
+  assert(gr);
+  for (int i=0; i<gr->GetN(); i++){
+    Double_t x;
+    Double_t y;
+    gr->GetPoint(i,x,y);
+    float exl = gr->GetErrorXlow(i);
+    float exh = gr->GetErrorXhigh(i);
+    float eyl = gr->GetErrorYlow(i);
+    float eyh = gr->GetErrorYhigh(i);
+    cout << i << " x=[" << x-exl << "-" << x+exh << "] : " << y << " +"<<eyh << " -" << eyl << endl;
   }
 }
