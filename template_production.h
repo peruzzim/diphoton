@@ -1286,6 +1286,13 @@ void template_production_class::FillDiffVariables(bool dogen){ // WARNING: THIS 
     *(roovardiff["njets"])=9998;
   }
   
+  if (mynjets>=1){
+    *(roovardiff["1jet_dR_gg_closestjet"])=(mindR1_gj<mindR2_gj) ? mindR1_gj : mindR2_gj;
+  }
+  else{
+    *(roovardiff["1jet_dR_gg_closestjet"])=9998;
+  }
+
   if (mynjets>=1 && pass_veto_closejets){
     *(roovardiff["1jet_jpt"])=myjets[0].Pt();
     *(roovardiff["1jet_dR_lead_j"])=sqrt(pow(pho1.Eta()-myjets[0].Eta(),2)+pow(AbsDeltaPhi(pho1.Phi(),myjets[0].Phi()),2));

@@ -25,6 +25,7 @@ TString("costhetastar"),\
 TString("dphi"),\
 TString("dR"),\
 TString("njets"),\
+TString("1jet_dR_gg_closestjet"),\
 TString("1jet_jpt"),\
 TString("1jet_dR_lead_j"),\
 TString("1jet_dR_trail_j"),\
@@ -46,6 +47,7 @@ TString("|cos #theta^{*}|, incl."),\
 TString("#Delta #phi_{#gamma #gamma}, incl."),\
 TString("#Delta R_{#gamma #gamma}, incl."),\
 TString("Njets"),\
+TString("Min #Delta R{#gamma ,j}, #geq 1j"),\
 TString("p_{T,j}, #geq 1j"),\
 TString("#Delta R{#gamma ,j}^{lead}, #geq 1j"),\
 TString("#Delta R{#gamma ,j}^{trail}, #geq 1j"),\
@@ -63,6 +65,7 @@ TString("#Delta #phi_{#gamma #gamma,jj}, #geq 2j")\
 TString __units__[] = {
 TString("GeV"),\
 TString("GeV"),\
+TString(""),\
 TString(""),\
 TString(""),\
 TString(""),\
@@ -85,7 +88,7 @@ TString("")\
 
 static const int n_bins=30;
 int __nbins__[] = { // this should always be the effective length of mybinsdef_ array minus 1 (last number there is for overflow)
-  16,21,8,14,22,5,9,13,14,14,13,5,3,5,5,5,5,5,5
+  16,21,8,14,22,5,5,9,13,14,14,13,5,3,5,5,5,5,5,5
 };
 
 float mybinsdef_invmass[n_bins+1]={0,40,60,70,75,80,85,90,95,100,110,120,150,250,400,800,800.01};
@@ -94,6 +97,7 @@ float mybinsdef_costhetastar[n_bins+1]={0,0.20,0.28,0.36,0.44,0.60,0.90,1.00,1.0
 float mybinsdef_dphi[n_bins+1]={0,0.2*Pi,0.4*Pi,0.6*Pi,0.7*Pi,0.8*Pi,0.84*Pi,0.88*Pi,0.90*Pi,0.92*Pi,0.94*Pi,0.96*Pi,0.98*Pi,1.0*Pi,1.0*Pi+0.01};
 float mybinsdef_dR[n_bins+1]={0,0.885757,1.38769,1.86009,2.18487,2.39155,2.53917,2.65727,2.74585,2.8049,2.86395,2.923,2.95253,2.98205,3.01158,3.0411,3.07063,3.10015,3.12968,3.1592,3.69066,5.90505,5.91505};
 float mybinsdef_njets[n_bins+1]={0,1,2,3,5,5.01};
+float mybinsdef_1jet_dR_gg_closestjet[n_bins+1]={0,0.5,0.8,1.0,20,20.01};
 float mybinsdef_1jet_jpt[n_bins+1]={25,30,35,40,50,60,70,85,600,600.01};
 float mybinsdef_1jet_dR_lead_j[n_bins+1]={1,1.91914,2.3325,2.5687,2.74585,2.923,3.07063,3.21825,3.39541,3.60208,3.86781,4.25164,5.90505,5.91505};
 float mybinsdef_1jet_dR_trail_j[n_bins+1]={1,1.32864,1.65341,1.91914,2.18487,2.42107,2.65727,2.86395,3.07063,3.30683,3.57256,3.92686,4.39926,5.90505,5.91505};
@@ -116,6 +120,7 @@ mybinsdef_costhetastar,\
 mybinsdef_dphi,\
 mybinsdef_dR,\
 mybinsdef_njets,\
+mybinsdef_1jet_dR_gg_closestjet,\
 mybinsdef_1jet_jpt,\
 mybinsdef_1jet_dR_lead_j,\
 mybinsdef_1jet_dR_trail_j,\
