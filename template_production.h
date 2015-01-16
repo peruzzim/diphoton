@@ -1206,6 +1206,8 @@ void template_production_class::FillDiffVariables(bool dogen){ // WARNING: THIS 
     for (int i=0; i<n_jets; i++) if (jet_pt[i]>additional_cut_jet_pt && fabs(jet_eta[i])<additional_cut_jet_eta) {
 	TLorentzVector a;
 	a.SetPtEtaPhiE(jet_pt[i],jet_eta[i],jet_phi[i],jet_energy[i]);
+	if (DeltaR(pho1.Eta(),pho1.Phi(),a.Eta(),a.Phi())<dR_identify_jet_with_photon) continue;
+	if (DeltaR(pho2.Eta(),pho2.Phi(),a.Eta(),a.Phi())<dR_identify_jet_with_photon) continue;
 	myjets.push_back(a);
       }
   }
@@ -1215,19 +1217,24 @@ void template_production_class::FillDiffVariables(bool dogen){ // WARNING: THIS 
     for (int i=0; i<n_GEN_jets; i++) if (jet_GEN_pt[i]>additional_cut_jet_pt && fabs(jet_GEN_eta[i])<additional_cut_jet_eta) {
 	TLorentzVector a;
 	a.SetPtEtaPhiE(jet_GEN_pt[i],jet_GEN_eta[i],jet_GEN_phi[i],jet_GEN_energy[i]);
+	if (DeltaR(pho1.Eta(),pho1.Phi(),a.Eta(),a.Phi())<dR_identify_jet_with_photon) continue;
+	if (DeltaR(pho2.Eta(),pho2.Phi(),a.Eta(),a.Phi())<dR_identify_jet_with_photon) continue;
 	myjets.push_back(a);
       }
   }
-  int mynjets = myjets.size();
-  float mindR1_gj = 999;
-  float mindR2_gj = 999;
-  for (int i=0; i<mynjets; i++){
-    float dR1 = sqrt(pow(pho1.Eta()-myjets[i].Eta(),2)+pow(AbsDeltaPhi(pho1.Phi(),myjets[i].Phi()),2));
-    if (dR1<mindR1_gj) mindR1_gj=dR1;
-    float dR2 = sqrt(pow(pho2.Eta()-myjets[i].Eta(),2)+pow(AbsDeltaPhi(pho2.Phi(),myjets[i].Phi()),2));
-    if (dR2<mindR2_gj) mindR2_gj=dR2;
+
+  bool pass_veto_closejets = true;
+  float minimumdR = 9998;
+  for (std::vector<TLorentzVector>::iterator it = myjets.begin(); it!=myjets.end(); ){
+    float dR1 = sqrt(pow(pho1.Eta()-it->Eta(),2)+pow(AbsDeltaPhi(pho1.Phi(),it->Phi()),2));
+    float dR2 = sqrt(pow(pho2.Eta()-it->Eta(),2)+pow(AbsDeltaPhi(pho2.Phi(),it->Phi()),2));
+    if (dR1<minimumdR) minimumdR=dR1;
+    if (dR2<minimumdR) minimumdR=dR2;
+    if (dR1<pass_veto_closejets_dRcut || dR2<pass_veto_closejets_dRcut) pass_veto_closejets=false;
+    if (dR1<pass_selection_closejets_dRcut || dR2<pass_selection_closejets_dRcut) it = myjets.erase(it); else it++;
   }
-  bool pass_veto_closejets = (mindR1_gj>pass_veto_closejets_dRcut && mindR2_gj>pass_veto_closejets_dRcut);
+  int mynjets = myjets.size();
+
   {
     *(roovardiff["invmass"])= (!dogen) ? dipho_mgg_photon : (pho1+pho2).M();
   }
@@ -1285,14 +1292,9 @@ void template_production_class::FillDiffVariables(bool dogen){ // WARNING: THIS 
   else{
     *(roovardiff["njets"])=9998;
   }
-  
-  if (mynjets>=1){
-    *(roovardiff["1jet_dR_gg_closestjet"])=(mindR1_gj<mindR2_gj) ? mindR1_gj : mindR2_gj;
-  }
-  else{
-    *(roovardiff["1jet_dR_gg_closestjet"])=9998;
-  }
 
+  *(roovardiff["dR_gg_closestjet"])=minimumdR;
+  
   if (mynjets>=1 && pass_veto_closejets){
     *(roovardiff["1jet_jpt"])=myjets[0].Pt();
     *(roovardiff["1jet_dR_lead_j"])=sqrt(pow(pho1.Eta()-myjets[0].Eta(),2)+pow(AbsDeltaPhi(pho1.Phi(),myjets[0].Phi()),2));
