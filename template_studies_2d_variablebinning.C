@@ -973,7 +973,7 @@ fit_output* fit_dataset(TString diffvariable, TString splitting, int bin, const 
   }
 
   int times_to_run = 1;
-  const int ntoys = 50;
+  const int ntoys = 500;
 
   std::vector<fit_output*> do_syst_templatestatistics_outputvector;
   std::vector<fit_output*> do_syst_purefitbias_outputvector;
