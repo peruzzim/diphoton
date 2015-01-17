@@ -185,11 +185,11 @@ void make_predictions_(TString var="", bool withdata = false){
   //  setTDRStyle();
   gStyle->SetOptLogy(dolog);
 
-  TFile *fsherpa = new TFile("theory_marco/outphoton_effunf_sig_Default_SHERPAcentral.root","read");
-  TFile *fsherpaup = new TFile("theory_marco/outphoton_effunf_sig_Default_SHERPAscaleup.root","read");
-  TFile *fsherpadown = new TFile("theory_marco/outphoton_effunf_sig_Default_SHERPAscaledown.root","read");
-  TFile *famcatnlo = new TFile("theory_marco/outphoton_effunf_sig_Default_aMCatNLO.root","read");
-  TFile *fbox = new TFile("theory_marco/outphoton_effunf_sig_Default_pythia8box.root","read");
+  TFile *fsherpa = new TFile("theory_marco/outphoton_theory_sherpa_central.root","read");
+  TFile *fsherpaup = new TFile("theory_marco/outphoton_theory_sherpa_scaleup.root","read");
+  TFile *fsherpadown = new TFile("theory_marco/outphoton_theory_sherpa_scaledown.root","read");
+  TFile *famcatnlo = new TFile("theory_marco/outphoton_theory_amcatnlo_01j_tuneCUETP8M1.root","read");
+  TFile *fbox = new TFile("theory_marco/outphoton_theory_pythia8box.root","read");
   
   for (std::vector<TString>::const_iterator it = diffvariables_list.begin(); it!=diffvariables_list.end(); it++){
 
