@@ -13,6 +13,7 @@ lista_vars=[
 "dphi",
 "dR",
 "njets",
+"dR_gg_closestjet",
 "1jet_jpt",
 "1jet_dR_lead_j",
 "1jet_dR_trail_j",
@@ -30,7 +31,7 @@ lista_vars=[
 
 
 #lista_nbins=[16]
-lista_nbins=[16,21,8,14,22,5,9,13,14,14,13,5,3,5,5,5,5,5,5]
+lista_nbins=[16,21,8,14,22,5,3,9,13,14,14,13,5,3,5,5,5,5,5,5]
 
 options=[''] # default
 #options=['templateshapeMCpromptdrivenEB','templateshapeMCpromptdrivenEE','templateshapeMCfakedrivenEB','templateshapeMCfakedrivenEE']
