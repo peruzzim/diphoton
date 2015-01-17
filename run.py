@@ -10,6 +10,9 @@ args = parser.parse_args()
 
 ##################################################################
 
+# limit statistics in templates
+limitstat = True
+
 if (args.what=='data'):
     file='./gg_minitree_data_141106_step1_isogeomcorr/data_step1_141106_isogeomcorr.root'
     modes=['sigsig','sigbkg','bkgbkg','standard','randomcone','sieiesideband','zee']
@@ -58,10 +61,9 @@ for mode in modes:
     thisnumber = number
     if (mode.rfind('standard')>=0):
         thisnumber = -1
-    if (mode.rfind('signal')>=0):
-        thisnumber=1e6
-    if (mode.rfind('randomcone')>=0):
-        thisnumber=1e6
+    if limitstat:
+        if (mode.rfind('randomcone')>=0 or mode.rfind('signal')>=0 or mode.rfind('background')>=0 or mode.rfind('nofragmentation')>=0 or mode.rfind('sieiesideband')>=0 or mode.rfind('sigsig')>=0):
+            thisnumber=1e5
     if (activate12events):
         args = ['root','-q','-b','-l','template_production.C+O("'+file+'","'+mode+'",'+str(isdata)+',"outphoton/outphoton_'+strdata+'_'+mode+'_1event.root","photoniso",'+str(thisnumber)+',false);']
         lista_processi.append(Popen(args))
