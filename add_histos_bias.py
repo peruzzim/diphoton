@@ -35,7 +35,9 @@ forcestring=''
 if (args.f):
 	forcestring=' -f '
 
-biases = ['templateshapeMCpromptdrivenEB','templateshapeMCpromptdrivenEE','templateshapeMCfakedrivenEB','templateshapeMCfakedrivenEE']
+#biases = ['templateshapeMCpromptdrivenEB','templateshapeMCpromptdrivenEE','templateshapeMCfakedrivenEB','templateshapeMCfakedrivenEE']
+#biases = ['templatestatistics','purefitbias']
+biases = ['templateshape2frag']
 
 os.system('mkdir histos_bias_eachbin')
 for bias in biases:
