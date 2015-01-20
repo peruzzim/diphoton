@@ -14,7 +14,7 @@ modes.append(['Default','ESCALEup','ESCALEdown','JECup','JECdown'])
 isdata.append(1)
 
 # MC (do not swap with data)
-file.append('./gg_minitree_mc_141106_step1_isogeomcorr/allmc.root')
+file.append('./gg_minitree_mc_141106_step1_isogeomcorr/sig.root')
 modes.append(['Default','ESMEARup','ESMEARdown','JERup','JERdown','efficiency'])
 isdata.append(0)
 
@@ -30,7 +30,7 @@ isdata.append(0)
 #################################################################
 
 number=-1
-spawn=4
+spawn=8
 lista_processi=[]
 
 from subprocess import Popen
