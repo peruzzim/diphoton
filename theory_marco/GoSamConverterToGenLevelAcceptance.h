@@ -40,7 +40,7 @@ public :
    TBranch        *b_E;   //!
    TBranch        *b_me_wgt;   //!
 
-   GoSamConverterToGenLevelAcceptance(TString filename);
+   GoSamConverterToGenLevelAcceptance(TString filename, TString outfilename);
    virtual ~GoSamConverterToGenLevelAcceptance();
    virtual Int_t    Cut();
    virtual Int_t    GetEntry(Long64_t entry);
@@ -90,17 +90,17 @@ public :
 #endif
 
 #ifdef GoSamConverterToGenLevelAcceptance_cxx
-GoSamConverterToGenLevelAcceptance::GoSamConverterToGenLevelAcceptance(TString filename) : fChain(0) 
+GoSamConverterToGenLevelAcceptance::GoSamConverterToGenLevelAcceptance(TString filename, TString outfilename) : fChain(0) 
 {
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
 
-  TFile *f = new TFile(filename.Data(),"read");
+  TFile *f = TFile::Open(filename.Data(),"read");
   TTree *tree = 0;
   f->GetObject("t3",tree);
   Init(tree);
   
-  outputFile = new TFile("converted_tree.root","recreate");
+  outputFile = new TFile(outfilename.Data(),"recreate");
   outputFile->cd();
   outputTree = new TTree("GenLevelTree","GenLevelTree");
   

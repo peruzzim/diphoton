@@ -111,7 +111,8 @@ public :
    typedef enum MyGenEngine {
      kUndefined,
      kSHERPA,
-     kaMCatNLO
+     kaMCatNLO,
+     kGoSam
    } GenEngine;
    GenEngine generator;
 
@@ -163,15 +164,17 @@ GenLevelAcceptance::GenLevelAcceptance(TString filename, float xsection, float s
 {
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
-  TFile *f = new TFile(filename.Data(),"read");
+  TFile *f = TFile::Open(filename.Data(),"read");
   TTree *tree = 0;
   f->GetObject("GenLevelTree",tree);
   assert(tree);
   generator = kUndefined;
   if (generator_=="SHERPA") generator = kSHERPA;
   else if (generator_=="aMCatNLO") generator = kaMCatNLO;
+  else if (generator_=="GoSam") generator = kGoSam;
   assert (generator != kUndefined);
   if (generator==kaMCatNLO) assert (xsec==1); // set sumweights = lhe_nevents for aMCatNLO
+  if (generator==kGoSam) assert (xsec==1 && sumweights==1); // should be treated by adding the weights in the tree
   Init(tree);
   InitOutputTree();
   Loop();
@@ -337,6 +340,9 @@ void GenLevelAcceptance::FillOutput(vector<uint> &passingpho, vector<uint> &pass
     event_luminormfactor = event_base_luminormfactor*weight_lhe;
     for (uint i=0; i<n_scalevar; i++) event_luminormfactor_scalevar->push_back(event_base_luminormfactor*weights_lhe->at(i+1));
     for (uint i=0; i<n_pdfvar; i++) event_luminormfactor_pdfvar->push_back(event_base_luminormfactor*weights_lhe->at(i+n_scalevar+1));
+  }
+  else if (generator==kGoSam){
+    event_luminormfactor = weight_geninfo;
   }
   else assert(false);
 
