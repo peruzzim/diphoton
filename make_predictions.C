@@ -20,6 +20,15 @@ typedef unsigned int uint;
 uint n_scalevar_amcatnlo = 8;
 uint n_pdfvar_amcatnlo = 100;
 
+int fonttype = 6;
+int fontprecision = 3;
+int xtitlesize = 25;
+int ytitlesize = 25;
+int xlabelsize = 25;
+int ylabelsize = 25;
+float xtitleoffset = 3;
+float ytitleoffset = 3;
+
 std::vector<TH1F*> GetMidPointMinMaxFromNDistributions(std::vector<TH1F*> histos); // for use with CT10 and scale uncertainty
 std::vector<TH1F*> GetRMSMinMaxFromNDistributions(std::vector<TH1F*> histos, TH1F* histo_central); // for use with NNPDF
 float CalcIntegratedCrossSection(TH1F* histo, bool isdifferential);
@@ -97,10 +106,16 @@ public:
     for (uint i=0; i<histos.size(); i++){
       if (!(*histos[i])) continue;
       (*histos[i])->SetLineColor(color_);
-      (*histos[i])->GetXaxis()->SetTitleSize(0.05);
-      (*histos[i])->GetYaxis()->SetTitleSize(0.06);
-      (*histos[i])->GetXaxis()->SetTitleSize(0.06);
-      (*histos[i])->GetXaxis()->SetLabelSize(0.05);
+      (*histos[i])->GetXaxis()->SetTitleFont(10*fonttype+fontprecision);
+      (*histos[i])->GetYaxis()->SetTitleFont(10*fonttype+fontprecision);
+      (*histos[i])->GetXaxis()->SetLabelFont(10*fonttype+fontprecision);
+      (*histos[i])->GetYaxis()->SetLabelFont(10*fonttype+fontprecision);
+      (*histos[i])->GetXaxis()->SetTitleSize(xtitlesize);
+      (*histos[i])->GetYaxis()->SetTitleSize(ytitlesize);
+      (*histos[i])->GetXaxis()->SetTitleOffset(xtitleoffset);
+      (*histos[i])->GetYaxis()->SetTitleOffset(ytitleoffset);
+      (*histos[i])->GetXaxis()->SetLabelSize(xlabelsize);
+      (*histos[i])->GetYaxis()->SetLabelSize(ylabelsize);
       (*histos[i])->SetLineWidth(2);
       (*histos[i])->SetStats(kFALSE);
       (*histos[i])->SetMinimum(0);
@@ -194,6 +209,8 @@ void AddRatioPad(TCanvas *c, int npad, prediction &pred, TH1F *hdata);
 void make_predictions_(TString var="", bool withdata = false){
 
   setCMSStyle();
+  gStyle->SetHatchesLineWidth(1);
+  gStyle->SetHatchesSpacing(0.8);
 
   TString lstring = dolog ? "LOG" : "";
 
@@ -207,10 +224,19 @@ void make_predictions_(TString var="", bool withdata = false){
   TFile *famcatnlo = new TFile("theory_marco/outphoton_theory_amcatnlo_012j_tuneCUETP8M1.root","read");
   TFile *fbox = new TFile("theory_marco/outphoton_theory_pythia8box.root","read");
 
-  TFile *fgosam = new TFile("theory_marco/outphoton_theory_gosam_aajj_mu1.root","read");
-  TFile *fgosamup = new TFile("theory_marco/outphoton_theory_gosam_aajj_mu2.root","read");
-  TFile *fgosamdown = new TFile("theory_marco/outphoton_theory_gosam_aajj_mu1o2.root","read");
-
+  TFile *fgosam = 0;
+  TFile *fgosamup = 0;
+  TFile *fgosamdown = 0;
+  if (var.Contains("1jet_")){
+    fgosam = new TFile("theory_marco/outphoton_theory_gosam_aaj_mu1.root","read");
+    fgosamup = new TFile("theory_marco/outphoton_theory_gosam_aaj_mu2.root","read");
+    fgosamdown = new TFile("theory_marco/outphoton_theory_gosam_aaj_mu1o2.root","read");
+  }
+  if (var.Contains("2jet_")){
+    fgosam = new TFile("theory_marco/outphoton_theory_gosam_aajj_mu1.root","read");
+    fgosamup = new TFile("theory_marco/outphoton_theory_gosam_aajj_mu2.root","read");
+    fgosamdown = new TFile("theory_marco/outphoton_theory_gosam_aajj_mu1o2.root","read");
+  }
 
   for (std::vector<TString>::const_iterator it = diffvariables_list.begin(); it!=diffvariables_list.end(); it++){
 
@@ -218,6 +244,7 @@ void make_predictions_(TString var="", bool withdata = false){
 
     TString diffvariable = *it;
 
+    std::vector<prediction*> predictions;
 
     // SHERPA
     prediction sherpa("SHERPA");
@@ -249,6 +276,8 @@ void make_predictions_(TString var="", bool withdata = false){
       sherpa.Scale(sherpa_kfactor);
     }
     cout << "Sherpa integral " << CalcIntegratedCrossSection(sherpa.central,true) << " +" << CalcIntegratedCrossSection(sherpa.up,true)-CalcIntegratedCrossSection(sherpa.central,true) << " " << CalcIntegratedCrossSection(sherpa.down,true)-CalcIntegratedCrossSection(sherpa.central,true) << " pb" << endl;
+    sherpa.MakeGraphErrors(kBlue,3345);
+    predictions.push_back(&sherpa);
     }
 
 
@@ -338,6 +367,8 @@ void make_predictions_(TString var="", bool withdata = false){
       amcatnlo.Scale(amcatnlo_kfactor);
     }
     cout << "aMC@NLO+BOX integral " << CalcIntegratedCrossSection(amcatnlo.central,true) << " +" << CalcIntegratedCrossSection(amcatnlo.up,true)-CalcIntegratedCrossSection(amcatnlo.central,true) << " " << CalcIntegratedCrossSection(amcatnlo.down,true)-CalcIntegratedCrossSection(amcatnlo.central,true) << " pb" << endl;
+    amcatnlo.MakeGraphErrors(kRed,3354);
+    predictions.push_back(&amcatnlo);
     }
 
 
@@ -345,7 +376,7 @@ void make_predictions_(TString var="", bool withdata = false){
 
     // GOSAM
     prediction gosam("GoSam");
-    {
+    if (var.Contains("1jet_") || var.Contains("2jet_")){
     TH1F *h[3];
     for (int i=0; i<3; i++){
       fgosam->GetObject(Form("effunf/htruth_%s_%d",it->Data(),i),h[i]);
@@ -373,21 +404,31 @@ void make_predictions_(TString var="", bool withdata = false){
       gosam.Scale(gosam_kfactor);
     }
     cout << "Gosam integral " << CalcIntegratedCrossSection(gosam.central,true) << " +" << CalcIntegratedCrossSection(gosam.up,true)-CalcIntegratedCrossSection(gosam.central,true) << " " << CalcIntegratedCrossSection(gosam.down,true)-CalcIntegratedCrossSection(gosam.central,true) << " pb" << endl;
+    gosam.MakeGraphErrors(kGreen+2,3395);
+    predictions.push_back(&gosam);
     }
 
 
-    sherpa.MakeGraphErrors(kBlue,3005);
-    amcatnlo.MakeGraphErrors(kRed,3004);
-    gosam.MakeGraphErrors(kGreen,3006);
-
     TH1F *hi = sherpa.central;
 
-    TCanvas *c = new TCanvas("comparison","",600,1200);
+    TCanvas *c = 0;
+    if (predictions.size()==2){
+    c = new TCanvas("comparison","",600,960);
+    c->cd();
+    newPad(1,"pad1",0,0.5,1,1);
+    c->GetPad(1)->SetBottomMargin(0.15);
+    newPad(2,"pad2",0,0.25,1,0.5);
+    newPad(3,"pad3",0,0,1,0.25);
+    }
+    else if (predictions.size()==3){
+    c = new TCanvas("comparison","",600,1200);
     c->cd();
     newPad(1,"pad1",0,0.6,1,1);
+    c->GetPad(1)->SetBottomMargin(0.15);
     newPad(2,"pad2",0,0.4,1,0.6);
     newPad(3,"pad3",0,0.2,1,0.4);
     newPad(4,"pad4",0,0,1,0.2);
+    }
 
     TString unit = diffvariables_units_list(diffvariable);
     TString xtitle = get_unit(diffvariable);
@@ -400,12 +441,10 @@ void make_predictions_(TString var="", bool withdata = false){
     hi->GetXaxis()->SetTitle(xtitle.Data());
     hi->Draw("AXIS");
     if (dolog) hi->GetYaxis()->UnZoom();
-    sherpa.gr->Draw("2 same");
-    sherpa.grnoerr->Draw("EP same");
-    amcatnlo.gr->Draw("2 same");
-    amcatnlo.grnoerr->Draw("EP same");
-    gosam.gr->Draw("2 same");
-    gosam.grnoerr->Draw("EP same");
+    for (uint i=0; i<predictions.size(); i++){
+      predictions.at(i)->gr->Draw("2 same");
+      predictions.at(i)->grnoerr->Draw("EP same");
+    }
     c->Update();
     c->SaveAs( Form("theory_marco/pred_%s%s.pdf",it->Data(),lstring.Data()));
     c->SaveAs( Form("theory_marco/pred_%s%s.png",it->Data(),lstring.Data()));
@@ -428,9 +467,9 @@ void make_predictions_(TString var="", bool withdata = false){
 
       addCMS((TPad*)(c->GetPad(1)));
 
-      AddRatioPad(c,2,sherpa,hdata);
-      AddRatioPad(c,3,amcatnlo,hdata);
-      AddRatioPad(c,4,gosam,hdata);
+      for (uint i=0; i<predictions.size(); i++){
+	AddRatioPad(c,i+2,*(predictions.at(i)),hdata);
+      }
 
       c->Update();
       c->SaveAs( Form("theory_marco/pred_%s%s_withdata.pdf",it->Data(),lstring.Data()));
@@ -455,10 +494,15 @@ void AddRatioPad(TCanvas *c, int npad, prediction &pred, TH1F *hdata){
   ratio->SetMarkerStyle(1);
   ratio->GetYaxis()->SetTitle(Form("%s / Data", pred.name.Data()));
   ratio->GetXaxis()->SetTitle("");
-  ratio->GetXaxis()->SetLabelSize(0.07);
-  ratio->GetYaxis()->SetTitleSize(0.10);
-  ratio->GetYaxis()->SetTitleOffset(0.5);
-  ratio->GetYaxis()->SetLabelSize(0.09);
+  ratio->GetXaxis()->SetTitleFont(10*fonttype+fontprecision);
+  ratio->GetYaxis()->SetTitleFont(10*fonttype+fontprecision);
+  ratio->GetXaxis()->SetLabelFont(10*fonttype+fontprecision);
+  ratio->GetYaxis()->SetLabelFont(10*fonttype+fontprecision);
+  ratio->GetXaxis()->SetTitleOffset(xtitleoffset);
+  ratio->GetYaxis()->SetTitleOffset(ytitleoffset);
+  ratio->GetXaxis()->SetLabelSize(xlabelsize);
+  ratio->GetYaxis()->SetTitleSize(ytitlesize);
+  ratio->GetYaxis()->SetLabelSize(ylabelsize);
   
   c->cd(npad);
   ((TPad*)(c->GetPad(npad)))->SetLogy(0);

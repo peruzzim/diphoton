@@ -32,8 +32,10 @@ CMS_lumi( TPad* pad, int iPeriod, int iPosX )
   TString lumiText;
   if( iPeriod==1 )
     {
+      lumiText += "#scale[1.5]{";
       lumiText += lumi_7TeV;
       lumiText += " (7 TeV)";
+      lumiText += "}";
     }
   else if ( iPeriod==2 )
     {

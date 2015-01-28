@@ -18,7 +18,7 @@ void setCMSStyle()
 {
 
   setTDRStyle();
-  writeExtraText = true;       // if extra text
+  writeExtraText = false;       // if extra text
   extraText  = "Preliminary";  // default extra text is "Preliminary"
   lumi_7TeV  = "5.0 fb^{-1}";  // default is "5.1 fb^{-1}"
 
