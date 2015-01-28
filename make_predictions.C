@@ -20,14 +20,18 @@ typedef unsigned int uint;
 uint n_scalevar_amcatnlo = 8;
 uint n_pdfvar_amcatnlo = 100;
 
-int fonttype = 6;
-int fontprecision = 3;
-int xtitlesize = 25;
-int ytitlesize = 25;
-int xlabelsize = 25;
-int ylabelsize = 25;
-float xtitleoffset = 3;
-float ytitleoffset = 3;
+typedef struct {
+  int fonttype;
+  int fontprecision;
+  int xtitlesize;
+  int ytitlesize;
+  int xlabelsize;
+  int ylabelsize;
+  float xtitleoffset;
+  float ytitleoffset;
+} fontinfo;
+
+fontinfo f;
 
 std::vector<TH1F*> GetMidPointMinMaxFromNDistributions(std::vector<TH1F*> histos); // for use with CT10 and scale uncertainty
 std::vector<TH1F*> GetRMSMinMaxFromNDistributions(std::vector<TH1F*> histos, TH1F* histo_central); // for use with NNPDF
@@ -40,9 +44,11 @@ void RemoveErrors(TH1F *h){
   for (int i=0; i<h->GetNbinsX(); i++) h->SetBinError(i+1,0);
 }
 void PrintGraph(TGraphAsymmErrors *gr);
+void PrintHistos(std::vector<TH1F*> vec);
 
 TPad* newPad(int number, TString name, float x1, float y1, float x2, float y2){
   TPad *p = new TPad(name.Data(),name.Data(),x1,y1,x2,y2);
+  p->SetRightMargin(0.04);
   p->SetNumber(number);
   p->Draw();
   return p;
@@ -106,16 +112,16 @@ public:
     for (uint i=0; i<histos.size(); i++){
       if (!(*histos[i])) continue;
       (*histos[i])->SetLineColor(color_);
-      (*histos[i])->GetXaxis()->SetTitleFont(10*fonttype+fontprecision);
-      (*histos[i])->GetYaxis()->SetTitleFont(10*fonttype+fontprecision);
-      (*histos[i])->GetXaxis()->SetLabelFont(10*fonttype+fontprecision);
-      (*histos[i])->GetYaxis()->SetLabelFont(10*fonttype+fontprecision);
-      (*histos[i])->GetXaxis()->SetTitleSize(xtitlesize);
-      (*histos[i])->GetYaxis()->SetTitleSize(ytitlesize);
-      (*histos[i])->GetXaxis()->SetTitleOffset(xtitleoffset);
-      (*histos[i])->GetYaxis()->SetTitleOffset(ytitleoffset);
-      (*histos[i])->GetXaxis()->SetLabelSize(xlabelsize);
-      (*histos[i])->GetYaxis()->SetLabelSize(ylabelsize);
+      (*histos[i])->GetXaxis()->SetTitleFont(10*f.fonttype+f.fontprecision);
+      (*histos[i])->GetYaxis()->SetTitleFont(10*f.fonttype+f.fontprecision);
+      (*histos[i])->GetXaxis()->SetLabelFont(10*f.fonttype+f.fontprecision);
+      (*histos[i])->GetYaxis()->SetLabelFont(10*f.fonttype+f.fontprecision);
+      (*histos[i])->GetXaxis()->SetTitleSize(f.xtitlesize);
+      (*histos[i])->GetYaxis()->SetTitleSize(f.ytitlesize);
+      (*histos[i])->GetXaxis()->SetTitleOffset(f.xtitleoffset);
+      (*histos[i])->GetYaxis()->SetTitleOffset(f.ytitleoffset);
+      (*histos[i])->GetXaxis()->SetLabelSize(f.xlabelsize);
+      (*histos[i])->GetYaxis()->SetLabelSize(f.ylabelsize);
       (*histos[i])->SetLineWidth(2);
       (*histos[i])->SetStats(kFALSE);
       (*histos[i])->SetMinimum(0);
@@ -249,6 +255,7 @@ void make_predictions_(TString var="", bool withdata = false){
     // SHERPA
     prediction sherpa("SHERPA");
     {
+    std::vector<TH1F*> hscale;
     TH1F *h[3];
     for (int i=0; i<3; i++){
       fsherpa->GetObject(Form("effunf/htruth_%s_%d",it->Data(),i),h[i]);
@@ -256,18 +263,37 @@ void make_predictions_(TString var="", bool withdata = false){
       if (i!=0) h[0]->Add(h[i]);
     }
     sherpa.central = (TH1F*)(h[0]->Clone("sherpa"));
+    hscale.push_back(sherpa.central);
     for (int i=0; i<3; i++){
       fsherpaup->GetObject(Form("effunf/htruth_%s_%d",it->Data(),i),h[i]);
       assert(h[i]);
       if (i!=0) h[0]->Add(h[i]);
     }
-    sherpa.up = (TH1F*)(h[0]->Clone("sherpaup"));
+    TH1F *hscaleup = (TH1F*)(h[0]->Clone("sherpaup"));
+    hscale.push_back(hscaleup);
     for (int i=0; i<3; i++){
       fsherpadown->GetObject(Form("effunf/htruth_%s_%d",it->Data(),i),h[i]);
       assert(h[i]);
       if (i!=0) h[0]->Add(h[i]);
     }
-    sherpa.down = (TH1F*)(h[0]->Clone("sherpadown"));
+    TH1F *hscaledown = (TH1F*)(h[0]->Clone("sherpadown"));
+    hscale.push_back(hscaledown);
+
+    cout << "sherpa_central sherpa_scaleup sherpa_scaledown" << endl;
+    PrintHistos(hscale);
+
+    vector<TH1F*> scalevars = GetMidPointMinMaxFromNDistributions(hscale);
+    sherpa.up = scalevars[2];
+    sherpa.down = scalevars[1];
+
+    std::vector<TH1F*> hscaleafter;
+    hscaleafter.push_back(sherpa.central);
+    hscaleafter.push_back(sherpa.up);
+    hscaleafter.push_back(sherpa.down);
+    cout << "sherpa.central sherpa.up sherpa.down" << endl;
+    PrintHistos(hscaleafter);
+
+
     sherpa.RemoveErrors();
     sherpa.MakeDifferential();
     sherpa.Scale(1e-3);
@@ -278,6 +304,11 @@ void make_predictions_(TString var="", bool withdata = false){
     cout << "Sherpa integral " << CalcIntegratedCrossSection(sherpa.central,true) << " +" << CalcIntegratedCrossSection(sherpa.up,true)-CalcIntegratedCrossSection(sherpa.central,true) << " " << CalcIntegratedCrossSection(sherpa.down,true)-CalcIntegratedCrossSection(sherpa.central,true) << " pb" << endl;
     sherpa.MakeGraphErrors(kBlue,3345);
     predictions.push_back(&sherpa);
+
+
+    PrintGraph(sherpa.gr);
+
+
     }
 
 
@@ -419,6 +450,16 @@ void make_predictions_(TString var="", bool withdata = false){
     c->GetPad(1)->SetBottomMargin(0.15);
     newPad(2,"pad2",0,0.25,1,0.5);
     newPad(3,"pad3",0,0,1,0.25);
+
+    f.fonttype = 6;
+    f.fontprecision = 3;
+    f.xtitlesize = 25;
+    f.ytitlesize = 25;
+    f.xlabelsize = 25;
+    f.ylabelsize = 25;
+    f.xtitleoffset = 2.3;
+    f.ytitleoffset = 2.3;
+
     }
     else if (predictions.size()==3){
     c = new TCanvas("comparison","",600,1200);
@@ -428,6 +469,16 @@ void make_predictions_(TString var="", bool withdata = false){
     newPad(2,"pad2",0,0.4,1,0.6);
     newPad(3,"pad3",0,0.2,1,0.4);
     newPad(4,"pad4",0,0,1,0.2);
+
+    f.fonttype = 6;
+    f.fontprecision = 3;
+    f.xtitlesize = 25;
+    f.ytitlesize = 25;
+    f.xlabelsize = 25;
+    f.ylabelsize = 25;
+    f.xtitleoffset = 3;
+    f.ytitleoffset = 3;
+
     }
 
     TString unit = diffvariables_units_list(diffvariable);
@@ -494,15 +545,15 @@ void AddRatioPad(TCanvas *c, int npad, prediction &pred, TH1F *hdata){
   ratio->SetMarkerStyle(1);
   ratio->GetYaxis()->SetTitle(Form("%s / Data", pred.name.Data()));
   ratio->GetXaxis()->SetTitle("");
-  ratio->GetXaxis()->SetTitleFont(10*fonttype+fontprecision);
-  ratio->GetYaxis()->SetTitleFont(10*fonttype+fontprecision);
-  ratio->GetXaxis()->SetLabelFont(10*fonttype+fontprecision);
-  ratio->GetYaxis()->SetLabelFont(10*fonttype+fontprecision);
-  ratio->GetXaxis()->SetTitleOffset(xtitleoffset);
-  ratio->GetYaxis()->SetTitleOffset(ytitleoffset);
-  ratio->GetXaxis()->SetLabelSize(xlabelsize);
-  ratio->GetYaxis()->SetTitleSize(ytitlesize);
-  ratio->GetYaxis()->SetLabelSize(ylabelsize);
+  ratio->GetXaxis()->SetTitleFont(10*f.fonttype+f.fontprecision);
+  ratio->GetYaxis()->SetTitleFont(10*f.fonttype+f.fontprecision);
+  ratio->GetXaxis()->SetLabelFont(10*f.fonttype+f.fontprecision);
+  ratio->GetYaxis()->SetLabelFont(10*f.fonttype+f.fontprecision);
+  ratio->GetXaxis()->SetTitleOffset(f.xtitleoffset);
+  ratio->GetYaxis()->SetTitleOffset(f.ytitleoffset);
+  ratio->GetXaxis()->SetLabelSize(f.xlabelsize);
+  ratio->GetYaxis()->SetTitleSize(f.ytitlesize);
+  ratio->GetYaxis()->SetLabelSize(f.ylabelsize);
   
   c->cd(npad);
   ((TPad*)(c->GetPad(npad)))->SetLogy(0);
@@ -647,5 +698,17 @@ void PrintGraph(TGraphAsymmErrors *gr){
     float eyl = gr->GetErrorYlow(i);
     float eyh = gr->GetErrorYhigh(i);
     cout << i << " x=[" << x-exl << "-" << x+exh << "] : " << y << " +"<<eyh << " -" << eyl << endl;
+  }
+}
+
+void PrintHistos(std::vector<TH1F*> vec){
+  if (vec.size()==0 || vec.at(0)==0) return;
+  for (int i=0; i<vec.at(0)->GetNbinsX(); i++){
+      cout << i << " x=[" << vec.at(0)->GetBinLowEdge(i+1) << "-" << vec.at(0)->GetBinLowEdge(i+1)+vec.at(0)->GetBinWidth(i+1) << "] :";
+      for (uint j=0; j<vec.size(); j++){
+	TH1F *h = vec.at(j);
+	cout << " " << h->GetBinContent(i+1);
+      }
+      cout << endl;
   }
 }
