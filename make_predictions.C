@@ -12,9 +12,9 @@
 
 bool dolog = false;
 
-float sherpa_kfactor = 1;
-float amcatnlo_kfactor = 1e-6;
-float gosam_kfactor = 1e3;
+float sherpa_kfactor = 1.22;
+float amcatnlo_kfactor = 1.09;
+float gosam_kfactor = 1;
 
 typedef unsigned int uint;
 uint n_scalevar_amcatnlo = 8;
@@ -388,6 +388,7 @@ void make_predictions_(TString var="", bool withdata = false){
     box.down = (TH1F*)(h[0]->Clone("box_down"));
     cout << "Box integral " << CalcIntegratedCrossSection(box.central,false)/1e3 << " pb" << endl;
 
+    amcatnlo.Scale(1e-6);
     amcatnlo.Add(box);
 
     amcatnlo.RemoveErrors();
@@ -427,6 +428,9 @@ void make_predictions_(TString var="", bool withdata = false){
       if (i!=0) h[0]->Add(h[i]);
     }
     gosam.down = (TH1F*)(h[0]->Clone("gosamdown"));
+
+    gosam.Scale(1e3);
+
     gosam.RemoveErrors();
     gosam.MakeDifferential();
     gosam.Scale(1e-3);
@@ -513,10 +517,13 @@ void make_predictions_(TString var="", bool withdata = false){
       hdata->SetFillStyle(1001);
       hdata->SetFillColorAlpha(kBlack,0.2);
       c->cd(1);
-      hdatastatonly->Draw("same P");
-      hdata->Draw("same E2");
+      hdatastatonly->Draw("P same");
+      hdata->Draw("E2 same");
       hdata->Print();
       max = (max<hdata->GetMaximum()) ? hdata->GetMaximum() : max;
+
+
+      cout << "DATA INTEGRAL: " << CalcIntegratedCrossSection(hdata,true) << endl;
 
       assert (hi);
       hi->GetYaxis()->SetRangeUser(0,1.3*max);
