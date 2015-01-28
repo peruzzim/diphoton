@@ -210,7 +210,7 @@ public:
 
 };
 
-void AddRatioPad(TCanvas *c, int npad, prediction &pred, TH1F *hdata);
+void AddRatioPad(TCanvas *c, int npad, prediction &pred, TH1F *hdata, TH1F *hdatastatonly);
 
 void make_predictions_(TString var="", bool withdata = false){
 
@@ -502,13 +502,19 @@ void make_predictions_(TString var="", bool withdata = false){
     c->SaveAs( Form("theory_marco/pred_%s%s.root",it->Data(),lstring.Data()));
 
     TFile *fdata = new TFile(Form("plots/histo_finalxs_fortheorycomp_%s.root",it->Data()),"read");
+    TFile *fdatastatonly = new TFile(Form("plots/histo_finalxsstatonly_fortheorycomp_%s.root",it->Data()),"read");
 
     if (withdata && !(fdata->IsZombie())){
 
       TH1F *hdata = (TH1F*)(fdata->Get(Form("histo_finalxs_fortheorycomp_%s",it->Data())));
-      hdata->SetMarkerStyle(20);
+      TH1F *hdatastatonly = (TH1F*)(fdatastatonly->Get(Form("histo_finalxsstatonly_fortheorycomp_%s",it->Data())));
+      hdatastatonly->SetMarkerStyle(20);
+      hdata->SetMarkerStyle(1);
+      hdata->SetFillStyle(1001);
+      hdata->SetFillColorAlpha(kBlack,0.2);
       c->cd(1);
-      hdata->Draw("same P");
+      hdatastatonly->Draw("same P");
+      hdata->Draw("same E2");
       hdata->Print();
       max = (max<hdata->GetMaximum()) ? hdata->GetMaximum() : max;
 
@@ -519,7 +525,7 @@ void make_predictions_(TString var="", bool withdata = false){
       addCMS((TPad*)(c->GetPad(1)));
 
       for (uint i=0; i<predictions.size(); i++){
-	AddRatioPad(c,i+2,*(predictions.at(i)),hdata);
+	AddRatioPad(c,i+2,*(predictions.at(i)),hdata,hdatastatonly);
       }
 
       c->Update();
@@ -533,7 +539,7 @@ void make_predictions_(TString var="", bool withdata = false){
 }
 
 
-void AddRatioPad(TCanvas *c, int npad, prediction &pred, TH1F *hdata){
+void AddRatioPad(TCanvas *c, int npad, prediction &pred, TH1F *hdata, TH1F *hdatastatonly){
 
   prediction predrel(pred.name.Data(),pred);
   predrel.DivideGraphsByHisto(hdata);
@@ -541,39 +547,48 @@ void AddRatioPad(TCanvas *c, int npad, prediction &pred, TH1F *hdata){
 
   TH1F *ratio = (TH1F*)(hdata->Clone("ratio"));
   BringTo1(ratio);
+  TH1F *ratiostat = (TH1F*)(hdatastatonly->Clone("ratiostat"));
+  BringTo1(ratiostat);
+  
+  ratiostat->SetMarkerStyle(1);
+  ratiostat->GetYaxis()->SetTitle(Form("%s / Data", pred.name.Data()));
+  ratiostat->GetXaxis()->SetTitle("");
+  ratiostat->GetXaxis()->SetTitleFont(10*f.fonttype+f.fontprecision);
+  ratiostat->GetYaxis()->SetTitleFont(10*f.fonttype+f.fontprecision);
+  ratiostat->GetXaxis()->SetLabelFont(10*f.fonttype+f.fontprecision);
+  ratiostat->GetYaxis()->SetLabelFont(10*f.fonttype+f.fontprecision);
+  ratiostat->GetXaxis()->SetTitleOffset(f.xtitleoffset);
+  ratiostat->GetYaxis()->SetTitleOffset(f.ytitleoffset);
+  ratiostat->GetXaxis()->SetLabelSize(f.xlabelsize);
+  ratiostat->GetYaxis()->SetTitleSize(f.ytitlesize);
+  ratiostat->GetYaxis()->SetLabelSize(f.ylabelsize);
   
   ratio->SetMarkerStyle(1);
-  ratio->GetYaxis()->SetTitle(Form("%s / Data", pred.name.Data()));
-  ratio->GetXaxis()->SetTitle("");
-  ratio->GetXaxis()->SetTitleFont(10*f.fonttype+f.fontprecision);
-  ratio->GetYaxis()->SetTitleFont(10*f.fonttype+f.fontprecision);
-  ratio->GetXaxis()->SetLabelFont(10*f.fonttype+f.fontprecision);
-  ratio->GetYaxis()->SetLabelFont(10*f.fonttype+f.fontprecision);
-  ratio->GetXaxis()->SetTitleOffset(f.xtitleoffset);
-  ratio->GetYaxis()->SetTitleOffset(f.ytitleoffset);
-  ratio->GetXaxis()->SetLabelSize(f.xlabelsize);
-  ratio->GetYaxis()->SetTitleSize(f.ytitlesize);
-  ratio->GetYaxis()->SetLabelSize(f.ylabelsize);
-  
+  ratio->SetFillStyle(1001);
+  ratio->SetFillColorAlpha(kBlack,0.2);
+
   c->cd(npad);
   ((TPad*)(c->GetPad(npad)))->SetLogy(0);
-  ratio->GetYaxis()->SetRangeUser(0,3);
-  ratio->Draw("E1");
-  TF1 *line = new TF1("line","1",ratio->GetXaxis()->GetXmin(),ratio->GetXaxis()->GetXmax());
-  line->SetLineColor(kBlue);
-  line->Draw("same");
+  ratiostat->GetYaxis()->SetRangeUser(0,3);
+  ratiostat->Draw("E1");
+  ratio->Draw("E2 same");
+//  TF1 *line = new TF1("line","1",ratio->GetXaxis()->GetXmin(),ratio->GetXaxis()->GetXmax());
+//  line->SetLineColor(kBlue);
+//  line->Draw("same");
   predrel.gr->Draw("2 same");
   predrel.grnoerr->Draw("EP same");
-  ratio->Draw("E1 same");
   
 }
 
 
 void make_predictions(TString var="", bool withdata = false){
-  dolog=false;
-  make_predictions_(var,withdata);
-  dolog=true;
-  make_predictions_(var,withdata);
+  for (std::vector<TString>::const_iterator it = diffvariables_list.begin(); it!=diffvariables_list.end(); it++){
+    if (var!="" && var!=*it) continue;
+    dolog=false;
+    make_predictions_(*it,withdata);
+    dolog=true;
+    make_predictions_(*it,withdata);
+  }
 }
 
 
