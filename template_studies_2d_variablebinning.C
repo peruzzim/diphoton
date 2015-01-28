@@ -3342,6 +3342,20 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
     histo_finalxs_fortheorycomp->Draw("e1");
     histo_finalxs_fortheorycomp->SaveAs(Form("plots/%s.root",histo_finalxs_fortheorycomp->GetName()));
 
+    TH1F *histo_finalxsstatonly_fortheorycomp = (TH1F*)(xsec_centralvalue->Clone(Form("histo_finalxsstatonly_fortheorycomp_%s",diffvariable.Data())));
+    histo_finalxsstatonly_fortheorycomp->SetTitle("Cross section (unfolding+efficiency) (stat.)");
+    histo_finalxsstatonly_fortheorycomp->Reset();
+    histo_finalxsstatonly_fortheorycomp->GetYaxis()->UnZoom();
+    SetFormat(histo_finalxsstatonly_fortheorycomp);
+    for (int bin=0; bin<bins_to_run; bin++){
+      float xs = xsec_centralvalue->GetBinContent(bin+1)/1e3;
+      float relerr = statcolumn[bin]/ngg_centralvalue->GetBinContent(bin+1);
+      histo_finalxsstatonly_fortheorycomp->SetBinContent(bin+1,xs);
+      histo_finalxsstatonly_fortheorycomp->SetBinError(bin+1,relerr*xs);
+      cout << "Bin " << bin << " " << xs << " +/- " << 100*relerr << " % (stat.)" << endl;
+    }
+    histo_finalxsstatonly_fortheorycomp->SaveAs(Form("plots/%s.root",histo_finalxsstatonly_fortheorycomp->GetName()));
+
 //    TH1F *histo_finalxsnolumi_fortheorycomp = (TH1F*)(xsec_centralvalue->Clone(Form("histo_finalxsnolumi_fortheorycomp_%s",diffvariable.Data())));
 //    histo_finalxsnolumi_fortheorycomp->SetTitle("Cross section (unfolding+efficiency) (stat.+syst.)");
 //    histo_finalxsnolumi_fortheorycomp->Reset();
