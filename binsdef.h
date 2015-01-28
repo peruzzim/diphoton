@@ -313,7 +313,7 @@ class systematics_handler {
     store.push_back(systematics_element("templateshapeMCfakedrivenEB","Fake template shape EB",1,0,0,0,1,kBlue,2));
     store.push_back(systematics_element("templateshapeMCpromptdrivenEE","Prompt template shape EE",1,0,0,0,1,kRed,9));
     store.push_back(systematics_element("templateshapeMCfakedrivenEE","Fake template shape EE",1,0,0,0,1,kBlue,9));
-    store.push_back(systematics_element("templateshape2frag","Fragmentation description",1,0,0,0,1,kOrange,9));
+    //    store.push_back(systematics_element("templateshape2frag","Fragmentation description",1,0,0,0,1,kOrange,9));
     store.push_back(systematics_element("noise_mixing","Event mixing",1,0,0,0,1,kCyan,9));
 
     store.push_back(systematics_element("purefitbias","Fit bias",1,0,1,0,0,kGray,2));

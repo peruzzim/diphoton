@@ -2481,7 +2481,7 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
     TH1F *histo_bias_templateshapeMCfakedrivenEB =   histos_systematics.at("templateshapeMCfakedrivenEB");
     TH1F *histo_bias_templateshapeMCpromptdrivenEE = histos_systematics.at("templateshapeMCpromptdrivenEE");
     TH1F *histo_bias_templateshapeMCfakedrivenEE =   histos_systematics.at("templateshapeMCfakedrivenEE");
-    TH1F *histo_bias_templateshape2frag = histos_systematics.at("templateshape2frag");
+    //    TH1F *histo_bias_templateshape2frag = histos_systematics.at("templateshape2frag");
     TH1F *histo_JECup = histos_systematics.at("JECup");
     TH1F *histo_JECdown = histos_systematics.at("JECdown");
     TH1F *histo_ESCALEup = histos_systematics.at("ESCALEup");
@@ -2509,9 +2509,9 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
 	file_bias_templateshapefakeEE->GetObject("histo_bias_templateshapeMCfakedrivenEE",histo_bias_templateshapeMCfakedrivenEE);
 	if (file_bias_templateshapefakeEE->IsZombie()) histo_bias_templateshapeMCfakedrivenEE=NULL;
       }
-      TFile *file_bias_templateshape2frag = new TFile(Form("plots/histo_bias_templateshape2frag_%s_%s_allbins.root",diffvariable.Data(),splitting.Data()));
-      file_bias_templateshape2frag->GetObject("histo_bias_templateshape2frag",histo_bias_templateshape2frag);
-      if (file_bias_templateshape2frag->IsZombie()) histo_bias_templateshape2frag=NULL;
+//      TFile *file_bias_templateshape2frag = new TFile(Form("plots/histo_bias_templateshape2frag_%s_%s_allbins.root",diffvariable.Data(),splitting.Data()));
+//      file_bias_templateshape2frag->GetObject("histo_bias_templateshape2frag",histo_bias_templateshape2frag);
+//      if (file_bias_templateshape2frag->IsZombie()) histo_bias_templateshape2frag=NULL;
       name_file_for2events_decision = "outphoton/outphoton_data_standard.root";
       TFile *file_JECup = new TFile("plots/ratiosyst_JECup.root");
       file_JECup->GetObject(Form("hreco_%s_%s_ratiosyst",diffvariable.Data(),splitting.Data()),histo_JECup);
@@ -2568,9 +2568,9 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
 	else if (syst.name=="templateshapeMCfakedrivenEE" && histo_bias_templateshapeMCfakedrivenEE){
 	  for (int bin=0; bin<bins_to_run; bin++) histo_syst->SetBinContent(bin+1,(!skipsystematics && splitting!="EBEB") ? fabs(histo_bias_templateshapeMCfakedrivenEE->GetBinContent(bin+1)-1) : 0);
 	}
-	else if (syst.name=="templateshape2frag" && histo_bias_templateshape2frag){
-	  for (int bin=0; bin<bins_to_run; bin++) histo_syst->SetBinContent(bin+1,(!skipsystematics) ? fabs(histo_bias_templateshape2frag->GetBinContent(bin+1)-1) : 0);
-	}
+//	else if (syst.name=="templateshape2frag" && histo_bias_templateshape2frag){
+//	  for (int bin=0; bin<bins_to_run; bin++) histo_syst->SetBinContent(bin+1,(!skipsystematics) ? fabs(histo_bias_templateshape2frag->GetBinContent(bin+1)-1) : 0);
+//	}
 	else if (syst.name=="noise_mixing"){
 	  for (int bin=0; bin<bins_to_run; bin++) histo_syst->SetBinContent(bin+1,get_noise_systematic(name_file_for2events_decision.Data(),diffvariable,splitting,bin));
 	}

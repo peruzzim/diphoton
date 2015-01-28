@@ -13,7 +13,8 @@
 bool dolog = false;
 
 float sherpa_kfactor = 1;
-float amcatnlo_kfactor = 1;
+float amcatnlo_kfactor = 1e-6;
+float gosam_kfactor = 1e3;
 
 typedef unsigned int uint;
 uint n_scalevar_amcatnlo = 8;
@@ -90,6 +91,8 @@ public:
       (*grs[i])->SetLineColor(color_);
       (*grs[i])->SetFillColor(color_);
       (*grs[i])->SetFillStyle(style_);
+      (*grs[i])->SetMarkerColor(color_);
+      (*grs[i])->SetMarkerSize(0);
     }
     for (uint i=0; i<histos.size(); i++){
       if (!(*histos[i])) continue;
@@ -174,7 +177,19 @@ public:
     }
   }
 
+  void DivideHistosByHisto(TH1F *histo){
+    for (uint i=0; i<histos.size(); i++){
+      if (!(*histos[i])) continue;
+      TH1F *h = *histos[i];
+      for (int j=0; j<h->GetNbinsX(); j++){
+	h->SetBinContent(j+1,h->GetBinContent(j+1)/histo->GetBinContent(j+1));
+      }
+    }
+  }
+
 };
+
+void AddRatioPad(TCanvas *c, int npad, prediction &pred, TH1F *hdata);
 
 void make_predictions_(TString var="", bool withdata = false){
 
@@ -188,15 +203,23 @@ void make_predictions_(TString var="", bool withdata = false){
   TFile *fsherpa = new TFile("theory_marco/outphoton_theory_sherpa_central.root","read");
   TFile *fsherpaup = new TFile("theory_marco/outphoton_theory_sherpa_scaleup.root","read");
   TFile *fsherpadown = new TFile("theory_marco/outphoton_theory_sherpa_scaledown.root","read");
-  TFile *famcatnlo = new TFile("theory_marco/outphoton_theory_amcatnlo_01j_tuneCUETP8M1.root","read");
+
+  TFile *famcatnlo = new TFile("theory_marco/outphoton_theory_amcatnlo_012j_tuneCUETP8M1.root","read");
   TFile *fbox = new TFile("theory_marco/outphoton_theory_pythia8box.root","read");
-  
+
+  TFile *fgosam = new TFile("theory_marco/outphoton_theory_gosam_aajj_mu1.root","read");
+  TFile *fgosamup = new TFile("theory_marco/outphoton_theory_gosam_aajj_mu2.root","read");
+  TFile *fgosamdown = new TFile("theory_marco/outphoton_theory_gosam_aajj_mu1o2.root","read");
+
+
   for (std::vector<TString>::const_iterator it = diffvariables_list.begin(); it!=diffvariables_list.end(); it++){
 
     if (var!="" && var!=*it) continue;
 
     TString diffvariable = *it;
 
+
+    // SHERPA
     prediction sherpa("SHERPA");
     {
     TH1F *h[3];
@@ -228,6 +251,10 @@ void make_predictions_(TString var="", bool withdata = false){
     cout << "Sherpa integral " << CalcIntegratedCrossSection(sherpa.central,true) << " +" << CalcIntegratedCrossSection(sherpa.up,true)-CalcIntegratedCrossSection(sherpa.central,true) << " " << CalcIntegratedCrossSection(sherpa.down,true)-CalcIntegratedCrossSection(sherpa.central,true) << " pb" << endl;
     }
 
+
+
+
+    // aMC@NLO + BOX
     prediction amcatnlo("aMC@NLO");
     {
     TH1F *h[3];
@@ -311,18 +338,56 @@ void make_predictions_(TString var="", bool withdata = false){
       amcatnlo.Scale(amcatnlo_kfactor);
     }
     cout << "aMC@NLO+BOX integral " << CalcIntegratedCrossSection(amcatnlo.central,true) << " +" << CalcIntegratedCrossSection(amcatnlo.up,true)-CalcIntegratedCrossSection(amcatnlo.central,true) << " " << CalcIntegratedCrossSection(amcatnlo.down,true)-CalcIntegratedCrossSection(amcatnlo.central,true) << " pb" << endl;
-    }    
+    }
+
+
+
+
+    // GOSAM
+    prediction gosam("GoSam");
+    {
+    TH1F *h[3];
+    for (int i=0; i<3; i++){
+      fgosam->GetObject(Form("effunf/htruth_%s_%d",it->Data(),i),h[i]);
+      assert(h[i]);
+      if (i!=0) h[0]->Add(h[i]);
+    }
+    gosam.central = (TH1F*)(h[0]->Clone("gosam"));
+    for (int i=0; i<3; i++){
+      fgosamup->GetObject(Form("effunf/htruth_%s_%d",it->Data(),i),h[i]);
+      assert(h[i]);
+      if (i!=0) h[0]->Add(h[i]);
+    }
+    gosam.up = (TH1F*)(h[0]->Clone("gosamup"));
+    for (int i=0; i<3; i++){
+      fgosamdown->GetObject(Form("effunf/htruth_%s_%d",it->Data(),i),h[i]);
+      assert(h[i]);
+      if (i!=0) h[0]->Add(h[i]);
+    }
+    gosam.down = (TH1F*)(h[0]->Clone("gosamdown"));
+    gosam.RemoveErrors();
+    gosam.MakeDifferential();
+    gosam.Scale(1e-3);
+    if (gosam_kfactor>0) {
+      cout << "APPLY K-FACTOR GOSAM: " << gosam_kfactor << endl;
+      gosam.Scale(gosam_kfactor);
+    }
+    cout << "Gosam integral " << CalcIntegratedCrossSection(gosam.central,true) << " +" << CalcIntegratedCrossSection(gosam.up,true)-CalcIntegratedCrossSection(gosam.central,true) << " " << CalcIntegratedCrossSection(gosam.down,true)-CalcIntegratedCrossSection(gosam.central,true) << " pb" << endl;
+    }
+
 
     sherpa.MakeGraphErrors(kBlue,3005);
     amcatnlo.MakeGraphErrors(kRed,3004);
+    gosam.MakeGraphErrors(kGreen,3006);
 
     TH1F *hi = sherpa.central;
 
-    TCanvas *c = new TCanvas();
+    TCanvas *c = new TCanvas("comparison","",600,1200);
     c->cd();
     newPad(1,"pad1",0,0.6,1,1);
-    newPad(2,"pad2",0,0.3,1,0.6);
-    newPad(3,"pad3",0,0,1,0.3);
+    newPad(2,"pad2",0,0.4,1,0.6);
+    newPad(3,"pad3",0,0.2,1,0.4);
+    newPad(4,"pad4",0,0,1,0.2);
 
     TString unit = diffvariables_units_list(diffvariable);
     TString xtitle = get_unit(diffvariable);
@@ -336,16 +401,15 @@ void make_predictions_(TString var="", bool withdata = false){
     hi->Draw("AXIS");
     if (dolog) hi->GetYaxis()->UnZoom();
     sherpa.gr->Draw("2 same");
-    sherpa.grnoerr->Draw("E same");
+    sherpa.grnoerr->Draw("EP same");
     amcatnlo.gr->Draw("2 same");
-    amcatnlo.grnoerr->Draw("E same");
+    amcatnlo.grnoerr->Draw("EP same");
+    gosam.gr->Draw("2 same");
+    gosam.grnoerr->Draw("EP same");
     c->Update();
     c->SaveAs( Form("theory_marco/pred_%s%s.pdf",it->Data(),lstring.Data()));
     c->SaveAs( Form("theory_marco/pred_%s%s.png",it->Data(),lstring.Data()));
     c->SaveAs( Form("theory_marco/pred_%s%s.root",it->Data(),lstring.Data()));
-
-    cout << "SHERPA:" << endl;
-    PrintGraph(sherpa.gr);
 
     TFile *fdata = new TFile(Form("plots/histo_finalxs_fortheorycomp_%s.root",it->Data()),"read");
 
@@ -364,97 +428,49 @@ void make_predictions_(TString var="", bool withdata = false){
 
       addCMS((TPad*)(c->GetPad(1)));
 
-      TH1F *ratio = (TH1F*)(hdata->Clone("ratio"));
-      BringTo1(ratio);
+      AddRatioPad(c,2,sherpa,hdata);
+      AddRatioPad(c,3,amcatnlo,hdata);
+      AddRatioPad(c,4,gosam,hdata);
 
-      // pad 2
-      {
-
-	cout << "drawing pad 2" << endl;
-
-	prediction sherparel("sherparel",sherpa);
-	sherparel.DivideGraphsByHisto(hdata);
-	prediction amcatnlorel("amcatnlorel",amcatnlo);
-	amcatnlorel.DivideGraphsByHisto(hdata);
-
-	cout << "relative predictions ready" << endl;
-
-	ratio->SetMarkerStyle(1);
-	ratio->GetYaxis()->SetTitle("Theory / Data");
-	ratio->GetXaxis()->SetTitle("");
-	ratio->GetXaxis()->SetLabelSize(0.07);
-	ratio->GetYaxis()->SetTitleSize(0.10);
-	ratio->GetYaxis()->SetTitleOffset(0.5);
-	ratio->GetYaxis()->SetLabelSize(0.09);
-
-	c->cd(2);
-	((TPad*)(c->GetPad(2)))->SetLogy(0);
-	ratio->GetYaxis()->SetRangeUser(0,3);
-	ratio->Draw("E1");
-	TF1 *line = new TF1("line","1",ratio->GetXaxis()->GetXmin(),ratio->GetXaxis()->GetXmax());
-	line->SetLineColor(kBlue);
-	line->Draw("same");
-	sherparel.gr->Draw("2 same");
-	amcatnlorel.gr->Draw("2 same");
-	ratio->Draw("E1 same");
-
-      }
-
-//      // pad 3
-//      {
-//
-//	TH1F *ratio = (TH1F*)(hdata->Clone("ratio"));
-//	ratio->Divide(amcatnlo->histo);
-//	ratio->SetMarkerStyle(1);
-//	ratio->GetYaxis()->SetTitle(!doratio4253 ? "Data / aMC@NLO" : "53X / 42X");
-//	ratio->GetXaxis()->SetTitle("");
-//	ratio->GetXaxis()->SetLabelSize(0.07);
-//	ratio->GetYaxis()->SetTitleSize(0.10);
-//	ratio->GetYaxis()->SetTitleOffset(0.5);
-//	ratio->GetYaxis()->SetLabelSize(0.09);
-//
-//	TH1F *ratio2 = NULL;
-//	if (with42data && !(fdata42->IsZombie())){
-//	  ratio2 = (TH1F*)(ratio->Clone("ratio2"));
-//	  ratio2->SetLineColor(kRed);
-//	  ratio2->SetMarkerColor(kRed);
-//	  ratio2->Reset();
-//	  ratio2->Divide(hdata42,amcatnlo->histo,1,1);
-//	  if (doratio4253){
-//	    TH1F *ratio3 = (TH1F*)(ratio2->Clone("ratio3"));
-//	    for (int i=0; i<ratio3->GetNbinsX(); i++) ratio3->SetBinError(i+1,0);
-//	    ratio->Divide(ratio3);
-//	    ratio2->Divide(ratio3);
-//	  }
-//	}
-//      
-//	c->cd(3);
-//	((TPad*)(c->GetPad(3)))->SetLogy(0);
-//	ratio->GetYaxis()->SetRangeUser(0,3);
-//	ratio->Draw("E1");
-//	TF1 *line = new TF1("line","1",ratio->GetXaxis()->GetXmin(),ratio->GetXaxis()->GetXmax());
-//	line->SetLineColor(kRed);
-//	line->Draw("same");
-//	amcatnlo->grratio->Draw("2 same");
-//	if (ratio2) {
-//	  if (!doratio4253) ratio2->Draw("E1 same");
-//	  else {
-//	    ratio2->SetFillColorAlpha(kRed,0.5);
-//	    ratio2->Draw("E2 same");
-//	  }
-//	}
-//	ratio->Draw("E1 same");
-//
-//      }
-      
       c->Update();
       c->SaveAs( Form("theory_marco/pred_%s%s_withdata.pdf",it->Data(),lstring.Data()));
-      c->SaveAs( Form("theory_marco/pred_%s%s_withdata.root",it->Data(),lstring.Data()));      
+      c->SaveAs( Form("theory_marco/pred_%s%s_withdata.root",it->Data(),lstring.Data()));
     }
 
   }
-  
 
+
+}
+
+
+void AddRatioPad(TCanvas *c, int npad, prediction &pred, TH1F *hdata){
+
+  prediction predrel(pred.name.Data(),pred);
+  predrel.DivideGraphsByHisto(hdata);
+  predrel.DivideHistosByHisto(hdata);
+
+  TH1F *ratio = (TH1F*)(hdata->Clone("ratio"));
+  BringTo1(ratio);
+  
+  ratio->SetMarkerStyle(1);
+  ratio->GetYaxis()->SetTitle(Form("%s / Data", pred.name.Data()));
+  ratio->GetXaxis()->SetTitle("");
+  ratio->GetXaxis()->SetLabelSize(0.07);
+  ratio->GetYaxis()->SetTitleSize(0.10);
+  ratio->GetYaxis()->SetTitleOffset(0.5);
+  ratio->GetYaxis()->SetLabelSize(0.09);
+  
+  c->cd(npad);
+  ((TPad*)(c->GetPad(npad)))->SetLogy(0);
+  ratio->GetYaxis()->SetRangeUser(0,3);
+  ratio->Draw("E1");
+  TF1 *line = new TF1("line","1",ratio->GetXaxis()->GetXmin(),ratio->GetXaxis()->GetXmax());
+  line->SetLineColor(kBlue);
+  line->Draw("same");
+  predrel.gr->Draw("2 same");
+  predrel.grnoerr->Draw("EP same");
+  ratio->Draw("E1 same");
+  
 }
 
 
