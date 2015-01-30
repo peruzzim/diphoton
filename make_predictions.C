@@ -54,6 +54,15 @@ TPad* newPad(int number, TString name, float x1, float y1, float x2, float y2){
   return p;
 }
 
+void AddQuadrature(TH1F *h1, TH1F *h2){
+  // h1 = h1 + h2 in quadrature
+  assert (h1 && h2);
+  assert (h1->GetNbinsX()==h2->GetNbinsX());
+  for (int j=0; j<h1->GetNbinsX(); j++){
+    h1->SetBinContent(j+1,sqrt(pow(h1->GetBinContent(j+1),2)+pow(h2->GetBinContent(j+1),2)));
+  }
+}
+
 class prediction {
 
 public:
@@ -61,6 +70,7 @@ public:
   TH1F *central;
   TH1F *up;
   TH1F *down;
+  TH1F *staterr;
   TGraphAsymmErrors *gr;
   TGraphAsymmErrors *grnoerr;
   Int_t color;
@@ -78,6 +88,7 @@ public:
     central = (TH1F*)(b.central->Clone(Form("%s_central",name.Data())));
     up = (TH1F*)(b.up->Clone(Form("%s_up",name.Data())));
     down = (TH1F*)(b.down->Clone(Form("%s_down",name.Data())));
+    staterr = (TH1F*)(b.staterr->Clone(Form("%s_staterr",name.Data())));
     gr = (TGraphAsymmErrors*)(b.gr->Clone(Form("%s_gr",name.Data())));
     grnoerr = (TGraphAsymmErrors*)(b.grnoerr->Clone(Form("%s_grnoerr",name.Data())));
     color = b.color;
@@ -87,6 +98,7 @@ public:
     central = 0;
     up = 0;
     down = 0;
+    staterr = 0;
     gr = 0;
     grnoerr = 0;
     color = kBlack;
@@ -95,6 +107,7 @@ public:
     histos.push_back(&central);
     histos.push_back(&up);
     histos.push_back(&down);
+    histos.push_back(&staterr);
     grs.push_back(&gr);
     grs.push_back(&grnoerr);
   }
@@ -133,24 +146,41 @@ public:
     central->Add(x.central);
     up->Add(x.up);
     down->Add(x.down);
+    AddQuadrature(staterr,x.staterr);
   }
 
   void MakeDifferential(){
     ::MakeDifferential(central);
     ::MakeDifferential(up);
     ::MakeDifferential(down);
+    ::MakeDifferential(staterr);
   }
 
   void RemoveErrors(){
     ::RemoveErrors(central);
     ::RemoveErrors(up);
     ::RemoveErrors(down);
+    ::RemoveErrors(staterr);
+  }
+
+  void FillStatErr(TH1F *h){
+    if (!staterr) staterr=(TH1F*)(h->Clone(Form("%s_staterr",name.Data())));
+    assert (h->GetNbinsX()==staterr->GetNbinsX());
+    for (int j=0; j<h->GetNbinsX(); j++){
+      staterr->SetBinContent(j+1,h->GetBinError(j+1));
+    }
+  }
+
+  void AddStatErrToUpDown(){
+    AddQuadrature(up,staterr);
+    AddQuadrature(down,staterr);
   }
 
   void Scale(float x){
     central->Scale(x);
     up->Scale(x);
     down->Scale(x);
+    staterr->Scale(x);
   }
 
   void MakeGraphErrors(int color=kBlack, int style=3005){
@@ -279,18 +309,19 @@ void make_predictions_(TString var="", bool withdata = false){
     TH1F *hscaledown = (TH1F*)(h[0]->Clone("sherpadown"));
     hscale.push_back(hscaledown);
 
-    cout << "sherpa_central sherpa_scaleup sherpa_scaledown" << endl;
-    PrintHistos(hscale);
-
     vector<TH1F*> scalevars = GetMidPointMinMaxFromNDistributions(hscale);
     sherpa.up = scalevars[2];
     sherpa.down = scalevars[1];
+
+    sherpa.FillStatErr(sherpa.central);
+    sherpa.AddStatErrToUpDown();
 
     std::vector<TH1F*> hscaleafter;
     hscaleafter.push_back(sherpa.central);
     hscaleafter.push_back(sherpa.up);
     hscaleafter.push_back(sherpa.down);
-    cout << "sherpa.central sherpa.up sherpa.down" << endl;
+    hscaleafter.push_back(sherpa.staterr);
+    cout << "sherpa.central sherpa.up sherpa.down sherpa.staterr" << endl;
     PrintHistos(hscaleafter);
 
 
@@ -377,6 +408,9 @@ void make_predictions_(TString var="", bool withdata = false){
     amcatnlo.up = (TH1F*)(amcatnlo.central->Clone("amcatnloup"));
     amcatnlo.up->Add(upunc);
 
+    amcatnlo.FillStatErr(amcatnlo.central);
+    amcatnlo.AddStatErrToUpDown();
+
     prediction box("box_transient");
     for (int i=0; i<3; i++){
       fbox->GetObject(Form("effunf/htruth_%s_%d",it->Data(),i),h[i]);
@@ -387,6 +421,9 @@ void make_predictions_(TString var="", bool withdata = false){
     box.up = (TH1F*)(h[0]->Clone("box_up"));
     box.down = (TH1F*)(h[0]->Clone("box_down"));
     cout << "Box integral " << CalcIntegratedCrossSection(box.central,false)/1e3 << " pb" << endl;
+
+    box.FillStatErr(box.central);
+    box.AddStatErrToUpDown();
 
     amcatnlo.Scale(1e-6);
     amcatnlo.Add(box);
@@ -428,6 +465,9 @@ void make_predictions_(TString var="", bool withdata = false){
       if (i!=0) h[0]->Add(h[i]);
     }
     gosam.down = (TH1F*)(h[0]->Clone("gosamdown"));
+
+    gosam.FillStatErr(gosam.central);
+    gosam.AddStatErrToUpDown();
 
     gosam.Scale(1e3);
 
