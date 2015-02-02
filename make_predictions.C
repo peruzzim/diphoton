@@ -12,8 +12,8 @@
 
 bool dolog = false;
 
-float sherpa_kfactor = 1.22;
-float amcatnlo_kfactor = 1.09;
+float sherpa_kfactor = 16.2/13.9;
+float amcatnlo_kfactor = 16.2/18.44;
 float gosam_kfactor = 1;
 
 typedef unsigned int uint;
@@ -257,7 +257,7 @@ void make_predictions_(TString var="", bool withdata = false){
   TFile *fsherpaup = new TFile("theory_marco/outphoton_theory_sherpa_scaleup.root","read");
   TFile *fsherpadown = new TFile("theory_marco/outphoton_theory_sherpa_scaledown.root","read");
 
-  TFile *famcatnlo = new TFile("theory_marco/outphoton_theory_amcatnlo_012j_tuneCUETP8M1.root","read");
+  TFile *famcatnlo = new TFile("theory_marco/outphoton_theory_amcatnlo_012j_tuneCUETP8M1_looseacc.root","read");
   TFile *fbox = new TFile("theory_marco/outphoton_theory_pythia8box.root","read");
 
   TFile *fgosam = 0;
@@ -268,7 +268,7 @@ void make_predictions_(TString var="", bool withdata = false){
     fgosamup = new TFile("theory_marco/outphoton_theory_gosam_aaj_mu2.root","read");
     fgosamdown = new TFile("theory_marco/outphoton_theory_gosam_aaj_mu1o2.root","read");
   }
-  if (var.Contains("2jet_")){
+  else if (var.Contains("2jet_")){
     fgosam = new TFile("theory_marco/outphoton_theory_gosam_aajj_mu1.root","read");
     fgosamup = new TFile("theory_marco/outphoton_theory_gosam_aajj_mu2.root","read");
     fgosamdown = new TFile("theory_marco/outphoton_theory_gosam_aajj_mu1o2.root","read");
@@ -425,7 +425,6 @@ void make_predictions_(TString var="", bool withdata = false){
     box.FillStatErr(box.central);
     box.AddStatErrToUpDown();
 
-    amcatnlo.Scale(1e-6);
     amcatnlo.Add(box);
 
     amcatnlo.RemoveErrors();
@@ -447,33 +446,38 @@ void make_predictions_(TString var="", bool withdata = false){
     prediction gosam("GoSam");
     if (var.Contains("1jet_") || var.Contains("2jet_")){
     TH1F *h[3];
+    std::vector<TH1F*> hvars;
     for (int i=0; i<3; i++){
       fgosam->GetObject(Form("effunf/htruth_%s_%d",it->Data(),i),h[i]);
       assert(h[i]);
       if (i!=0) h[0]->Add(h[i]);
     }
     gosam.central = (TH1F*)(h[0]->Clone("gosam"));
+    hvars.push_back(gosam.central);
     for (int i=0; i<3; i++){
       fgosamup->GetObject(Form("effunf/htruth_%s_%d",it->Data(),i),h[i]);
       assert(h[i]);
       if (i!=0) h[0]->Add(h[i]);
     }
-    gosam.up = (TH1F*)(h[0]->Clone("gosamup"));
+    hvars.push_back((TH1F*)(h[0]->Clone("gosamup")));
     for (int i=0; i<3; i++){
       fgosamdown->GetObject(Form("effunf/htruth_%s_%d",it->Data(),i),h[i]);
       assert(h[i]);
       if (i!=0) h[0]->Add(h[i]);
     }
-    gosam.down = (TH1F*)(h[0]->Clone("gosamdown"));
+    hvars.push_back((TH1F*)(h[0]->Clone("gosamdown")));
+
+    vector<TH1F*> scalevars = GetMidPointMinMaxFromNDistributions(hvars);
+    gosam.up = scalevars[2];
+    gosam.down = scalevars[1];
 
     gosam.FillStatErr(gosam.central);
     gosam.AddStatErrToUpDown();
 
-    gosam.Scale(1e3);
-
     gosam.RemoveErrors();
     gosam.MakeDifferential();
-    gosam.Scale(1e-3);
+//    gosam.Scale(1e3);
+//    gosam.Scale(1e-3);
     if (gosam_kfactor>0) {
       cout << "APPLY K-FACTOR GOSAM: " << gosam_kfactor << endl;
       gosam.Scale(gosam_kfactor);
