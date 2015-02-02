@@ -240,9 +240,9 @@ public:
 
 };
 
-void AddRatioPad(TCanvas *c, int npad, prediction &pred, TH1F *hdata, TH1F *hdatastatonly);
+void AddRatioPad(TCanvas *c, int npad, prediction &pred, TH1F *hdata, TH1F *hdatastatonly, TString diffvariable);
 
-void make_predictions_(TString var="", bool withdata = false){
+void make_predictions_(TString var="", bool withdata = true){
 
   setCMSStyle();
   gStyle->SetHatchesLineWidth(1);
@@ -536,6 +536,7 @@ void make_predictions_(TString var="", bool withdata = false){
 
     c->cd(1);
     hi->GetYaxis()->SetRangeUser(0,1.3*max);
+    if (diffvariable=="1jet_dR_lead_j") hi->GetXaxis()->SetRangeUser(2,5.8);
     hi->GetYaxis()->SetTitle(ytitle.Data());
     hi->GetXaxis()->SetTitle(xtitle.Data());
     hi->Draw("AXIS");
@@ -576,7 +577,7 @@ void make_predictions_(TString var="", bool withdata = false){
       addCMS((TPad*)(c->GetPad(1)));
 
       for (uint i=0; i<predictions.size(); i++){
-	AddRatioPad(c,i+2,*(predictions.at(i)),hdata,hdatastatonly);
+	AddRatioPad(c,i+2,*(predictions.at(i)),hdata,hdatastatonly,diffvariable);
       }
 
       c->Update();
@@ -590,7 +591,7 @@ void make_predictions_(TString var="", bool withdata = false){
 }
 
 
-void AddRatioPad(TCanvas *c, int npad, prediction &pred, TH1F *hdata, TH1F *hdatastatonly){
+void AddRatioPad(TCanvas *c, int npad, prediction &pred, TH1F *hdata, TH1F *hdatastatonly, TString diffvariable){
 
   prediction predrel(pred.name.Data(),pred);
   predrel.DivideGraphsByHisto(hdata);
@@ -621,6 +622,7 @@ void AddRatioPad(TCanvas *c, int npad, prediction &pred, TH1F *hdata, TH1F *hdat
   c->cd(npad);
   ((TPad*)(c->GetPad(npad)))->SetLogy(0);
   ratiostat->GetYaxis()->SetRangeUser(0,3);
+  if (diffvariable=="1jet_dR_lead_j") ratiostat->GetXaxis()->SetRangeUser(2,5.8);
   ratiostat->Draw("E1");
   ratio->Draw("E2 same");
 //  TF1 *line = new TF1("line","1",ratio->GetXaxis()->GetXmin(),ratio->GetXaxis()->GetXmax());
@@ -632,7 +634,7 @@ void AddRatioPad(TCanvas *c, int npad, prediction &pred, TH1F *hdata, TH1F *hdat
 }
 
 
-void make_predictions(TString var="", bool withdata = false){
+void make_predictions(TString var="", bool withdata = true){
   for (std::vector<TString>::const_iterator it = diffvariables_list.begin(); it!=diffvariables_list.end(); it++){
     if (var!="" && var!=*it) continue;
     dolog=false;
