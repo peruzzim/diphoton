@@ -46,6 +46,8 @@
 #include "RooUnfold-1.1.1/src/RooUnfoldBayes.h"
 #include "RooUnfold-1.1.1/src/RooUnfoldBinByBin.h"
 
+bool do_full_genreco_tree_effunf = false;
+
 bool do_scan_cone = false;
 
 using namespace std;
@@ -411,6 +413,9 @@ public :
    Bool_t do2ftemplate;
    Bool_t doeffunf;
 
+   TTree *fulltree;
+   std::map<TString, float*> *fulltree_varmap;
+
    TH2F *histo_zee_scalefactor;
    TH1F *histo_zuug_scalefactor;
 
@@ -438,6 +443,9 @@ public :
    TH1F *Histo_PUAddWeight_ScaleDown;
    TH1F *Histo_PUAddWeight_ScaleDef;
    float GetPUAddWeight_ScaleUpDown(int nPU_true_, bool want_scale_up);
+
+   void ResetFullTreeVars();
+   void FillFullTreeVars(std::map<TString,float> *m, bool isgen);
 
 };
 
@@ -637,6 +645,11 @@ void template_production_class::Setup(Bool_t _isdata, TString _mode, TString _di
     }
 
   if (doeffunf) {
+    if (do_full_genreco_tree_effunf) {
+      out->cd();
+      fulltree = new TTree("fulltree","fulltree");
+      fulltree_varmap = new std::map<TString,float*>();
+    }
     for (std::vector<TString>::const_iterator diffvariable = diffvariables_list.begin(); diffvariable!=diffvariables_list.end(); diffvariable++){
       for (int i=0; i<3; i++) {
 	roounfoldmatrices_struct a;
@@ -652,6 +665,14 @@ void template_production_class::Setup(Bool_t _isdata, TString _mode, TString _di
 	if (i==0) reg="EBEB"; else if (i==1) reg="EBEE"; else if (i==2) reg="EEEE";
 	histo_zee_yieldtosubtract[get_name_zeehisto(i,*diffvariable)] = new TH1F(Form("histo_zee_yieldtosubtract_%s_%s",diffvariable->Data(),reg.Data()),Form("histo_zee_yieldtosubtract_%s_%s",diffvariable->Data(),reg.Data()),diffvariables_nbins_list(*diffvariable)-1,diffvariables_binsdef_list(*diffvariable));
 	histo_zee_yieldtosubtract_UPvar[get_name_zeehisto(i,*diffvariable,true)] = new TH1F(Form("histo_zee_yieldtosubtract_%s_%s_UPvar",diffvariable->Data(),reg.Data()),Form("histo_zee_yieldtosubtract_%s_%s_UPvar",diffvariable->Data(),reg.Data()),diffvariables_nbins_list(*diffvariable)-1,diffvariables_binsdef_list(*diffvariable));
+      }
+      if (do_full_genreco_tree_effunf) {
+	TString name = *diffvariable;
+	(*fulltree_varmap)[name]=new float();
+	fulltree->Branch(name.Data(),(*fulltree_varmap)[name],Form("%s/F",name.Data()));
+	name.Append("_GEN");
+	(*fulltree_varmap)[name]=new float();
+	fulltree->Branch(name.Data(),(*fulltree_varmap)[name],Form("%s/F",name.Data()));
       }
     }
   }
@@ -910,6 +931,7 @@ void template_production_class::WriteOutput(){
   }
 
   if (doeffunf) {
+    if (do_full_genreco_tree_effunf) fulltree->Write();
     out->mkdir("effunf");
     out->cd("effunf");
     for (std::vector<TString>::const_iterator diffvariable = diffvariables_list.begin(); diffvariable!=diffvariables_list.end(); diffvariable++){
@@ -1370,6 +1392,20 @@ float template_production_class::GetPUAddWeight_ScaleUpDown(int nPU_true_, bool 
   if (event_nPUtrue>25) return 1; // even less perfect
   return num/den;
 
+};
+
+void template_production_class::ResetFullTreeVars(){
+  for (std::map<TString,float*>::iterator it = fulltree_varmap->begin(); it!=fulltree_varmap->end(); it++){
+    *(it->second)=-999;
+  }
+};
+
+void template_production_class::FillFullTreeVars(std::map<TString,float> *m, bool isgen){
+  for (std::map<TString,float>::iterator it = m->begin(); it!=m->end(); it++){
+    TString name = it->first;
+    if (isgen) name.Append("_GEN");
+    *((*fulltree_varmap)[name])=it->second;
+  }
 };
 
 #endif // #ifdef template_production_class_cxx

@@ -284,7 +284,7 @@ void template_production_class::Loop(int maxevents)
 
     //    if (event_nRecVtx>5) continue;
 
-    //    if (jentry==1e+4) break;
+    //    if (jentry==100) break;
 
     // initial kinematic selection
     if (dodistribution) if (pholead_pt<40 || photrail_pt<25) continue;
@@ -461,6 +461,7 @@ void template_production_class::Loop(int maxevents)
     if (dodistribution) photrail_outvar-=getpuenergy(reg_trail,photrail_SCeta);
     if (do2ptemplate || do1p1ftemplate || do2ftemplate) photrail_outvar-=getpuenergy(reg_trail,photrail_SCeta);
     
+    //    cout << pholead_pt << " " << photrail_pt << " " << pholead_outvar << " " << photrail_outvar << " " << event_ok_for_dataset << endl;
 
     if (recalc_lead && mode!="standard_domatching" && mode!="effunf"){
       if (pholead_outvar<-100) std::cout << "PROBLEM WITH ISOLATION CALCULATION!!!" << std::endl;
@@ -995,6 +996,8 @@ void template_production_class::Loop(int maxevents)
 
     if (doeffunf){
 
+      if (do_full_genreco_tree_effunf) ResetFullTreeVars();
+
       int event_ok_for_dataset_local = event_ok_for_dataset;
       if (!reco_in_acc) event_ok_for_dataset_local = -1;
       if (reco_in_acc && event_ok_for_dataset_local<0) cout << "ERROR" << endl;
@@ -1038,6 +1041,12 @@ void template_production_class::Loop(int maxevents)
 	for (std::map<TString,Float_t*>::const_iterator it = roovardiff.begin(); it!=roovardiff.end(); it++) mydiff_gen[it->first]=*(it->second);
       }
 
+      if (do_full_genreco_tree_effunf) {
+	if (reco_in_acc) FillFullTreeVars(&mydiff_reco,false);
+	if (gen_in_acc) FillFullTreeVars(&mydiff_gen,true);
+	fulltree->Fill();
+      }
+
       for (std::vector<TString>::const_iterator diffvariable = diffvariables_list.begin(); diffvariable!=diffvariables_list.end(); diffvariable++){
 	
 	bool reco_in_acc_local = reco_in_acc;
@@ -1072,7 +1081,6 @@ void template_production_class::Loop(int maxevents)
 	    for (uint k=0; k<n_pdfvar; k++) responsematrix_effunf[get_name_responsematrix_effunf(event_ok_for_dataset_local_gen,*diffvariable)].htruth_pdfvar->at(k)->Fill(mydiff_gen[*diffvariable],weight*event_luminormfactor_pdfvar->at(k)/event_luminormfactor);
 	  }
 	}
-
       }
       
     } // end if effunf
