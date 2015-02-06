@@ -7,6 +7,7 @@
 #include "TCanvas.h"
 #include "TStyle.h"
 #include "TPad.h"
+#include "TLegend.h"
 
 #include "myStyleMacro.C"
 
@@ -585,6 +586,17 @@ void make_predictions_(TString var="", bool withdata = true){
       if (dologx) hi->GetXaxis()->UnZoom();
 
       addCMS((TPad*)(c->GetPad(1)),position);
+
+      TLegend *leg = (position==11) ? new TLegend(0.7,0.6,0.9,0.9) : new TLegend(0.7,0.5,0.9,0.8);
+      leg->SetFillColor(kWhite);
+      leg->SetBorderSize(0);
+      leg->SetTextFont(10*f.fonttype+f.fontprecision);
+      leg->SetTextSize(20);
+      leg->AddEntry(hdata,"Data","lp");
+      for (uint i=0; i<predictions.size(); i++){
+	leg->AddEntry(predictions.at(i)->gr,predictions.at(i)->name.Data(),"lf");
+      }
+      leg->Draw();
 
       for (uint i=0; i<predictions.size(); i++){
 	AddRatioPad(c,i+2,*(predictions.at(i)),hdata,hdatastatonly,diffvariable);
