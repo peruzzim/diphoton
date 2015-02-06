@@ -46,6 +46,9 @@ void setCMSStyle()
 
 void addCMS(TPad *canv, int iPos = 11, int iPeriod = 1)
 { 
+  if (iPos==13) {
+    relPosX=0.2;
+  }
   CMS_lumi( canv, iPeriod, iPos );
   canv->Update();
   canv->RedrawAxis();

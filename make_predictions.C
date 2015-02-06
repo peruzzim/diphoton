@@ -11,6 +11,8 @@
 #include "myStyleMacro.C"
 
 bool dolog = false;
+bool dologx = false;
+int position = 11;
 
 float sherpa_kfactor = 16.2/13.9;
 float amcatnlo_kfactor = 16.2/18.44;
@@ -168,6 +170,7 @@ public:
     assert (h->GetNbinsX()==staterr->GetNbinsX());
     for (int j=0; j<h->GetNbinsX(); j++){
       staterr->SetBinContent(j+1,h->GetBinError(j+1));
+      cout << "bin " << j+1 << " stat err: " << staterr->GetBinContent(j+1)/central->GetBinContent(j+1) << endl;
     }
   }
 
@@ -248,10 +251,15 @@ void make_predictions_(TString var="", bool withdata = true){
   gStyle->SetHatchesLineWidth(1);
   gStyle->SetHatchesSpacing(0.8);
 
-  TString lstring = dolog ? "LOG" : "";
+  TString lstring = "";
+  if (dolog || dologx) lstring.Append("LOG");
+  if (dologx) lstring.Append("X");
+  if (dolog) lstring.Append("Y");
+  if (position==13) lstring.Append("LR");
 
   //  setTDRStyle();
   gStyle->SetOptLogy(dolog);
+  gStyle->SetOptLogx(dologx);
 
   TFile *fsherpa = new TFile("theory_marco/outphoton_theory_sherpa_central.root","read");
   TFile *fsherpaup = new TFile("theory_marco/outphoton_theory_sherpa_scaleup.root","read");
@@ -472,7 +480,7 @@ void make_predictions_(TString var="", bool withdata = true){
     gosam.down = scalevars[1];
 
     gosam.FillStatErr(gosam.central);
-    gosam.AddStatErrToUpDown();
+    //    gosam.AddStatErrToUpDown();
 
     gosam.RemoveErrors();
     gosam.MakeDifferential();
@@ -536,11 +544,12 @@ void make_predictions_(TString var="", bool withdata = true){
 
     c->cd(1);
     hi->GetYaxis()->SetRangeUser(0,1.3*max);
-    if (diffvariable=="1jet_dR_lead_j") hi->GetXaxis()->SetRangeUser(2,5.8);
+    //    if (diffvariable=="1jet_dR_lead_j") hi->GetXaxis()->SetRangeUser(2,5.8);
     hi->GetYaxis()->SetTitle(ytitle.Data());
     hi->GetXaxis()->SetTitle(xtitle.Data());
     hi->Draw("AXIS");
     if (dolog) hi->GetYaxis()->UnZoom();
+    if (dologx) hi->GetXaxis()->UnZoom();
     for (uint i=0; i<predictions.size(); i++){
       predictions.at(i)->gr->Draw("2 same");
       predictions.at(i)->grnoerr->Draw("EP same");
@@ -573,8 +582,9 @@ void make_predictions_(TString var="", bool withdata = true){
       assert (hi);
       hi->GetYaxis()->SetRangeUser(0,1.3*max);
       if (dolog) hi->GetYaxis()->UnZoom();
+      if (dologx) hi->GetXaxis()->UnZoom();
 
-      addCMS((TPad*)(c->GetPad(1)));
+      addCMS((TPad*)(c->GetPad(1)),position);
 
       for (uint i=0; i<predictions.size(); i++){
 	AddRatioPad(c,i+2,*(predictions.at(i)),hdata,hdatastatonly,diffvariable);
@@ -622,7 +632,7 @@ void AddRatioPad(TCanvas *c, int npad, prediction &pred, TH1F *hdata, TH1F *hdat
   c->cd(npad);
   ((TPad*)(c->GetPad(npad)))->SetLogy(0);
   ratiostat->GetYaxis()->SetRangeUser(0,3);
-  if (diffvariable=="1jet_dR_lead_j") ratiostat->GetXaxis()->SetRangeUser(2,5.8);
+  //  if (diffvariable=="1jet_dR_lead_j") ratiostat->GetXaxis()->SetRangeUser(2,5.8);
   ratiostat->Draw("E1");
   ratio->Draw("E2 same");
 //  TF1 *line = new TF1("line","1",ratio->GetXaxis()->GetXmin(),ratio->GetXaxis()->GetXmax());
@@ -637,10 +647,18 @@ void AddRatioPad(TCanvas *c, int npad, prediction &pred, TH1F *hdata, TH1F *hdat
 void make_predictions(TString var="", bool withdata = true){
   for (std::vector<TString>::const_iterator it = diffvariables_list.begin(); it!=diffvariables_list.end(); it++){
     if (var!="" && var!=*it) continue;
-    dolog=false;
+    bool logs[2]={false,true};
+    int pos[2]={11,13};
+    bool logsx[2]={false,true};
     make_predictions_(*it,withdata);
-    dolog=true;
-    make_predictions_(*it,withdata);
+    for (int i=0; i<2; i++)
+      for (int j=0; j<2; j++)
+	for (int k=0; k<2; k++){
+	  dolog=logs[i];
+	  position=pos[j];
+	  dologx=logsx[k];
+	  make_predictions_(*it,withdata);
+	}
   }
 }
 
