@@ -48,6 +48,7 @@ void RemoveErrors(TH1F *h){
 }
 void PrintGraph(TGraphAsymmErrors *gr);
 void PrintHistos(std::vector<TH1F*> vec);
+TH1F* JackknifammiStiHistos(std::vector<TH1F*> histos_splitted);
 
 TPad* newPad(int number, TString name, float x1, float y1, float x2, float y2){
   TPad *p = new TPad(name.Data(),name.Data(),x1,y1,x2,y2);
@@ -810,3 +811,45 @@ void PrintHistos(std::vector<TH1F*> vec){
       cout << endl;
   }
 }
+
+TH1F* JackknifammiStiHistos(std::vector<TH1F*> histos_splitted){
+
+  int n = histos_splitted.size();
+  assert (n>0);
+  int nbins = histos_splitted.at(0)->GetNbinsX();
+  for (int i=0; i<n; i++) assert(nbins==histos_splitted.at(i)->GetNbinsX());
+
+  TH1F *hout = (TH1F*)(histos_splitted.at(0)->Clone("jackknife"));
+  hout->Reset();
+
+  std::vector<TH1F*> histos_resampled;
+  for (int i=0; i<n; i++) {
+    TH1F *resampled = (TH1F*)(hout->Clone(Form("resampled_%d",i)));
+    resampled->Reset();
+    for (int k=0; k<n; k++) if (k!=i) resampled->Add(histos_splitted.at(k));
+    histos_resampled.push_back(resampled);
+  }
+
+  for (int j=1; j<nbins+1; j++){
+
+    std::vector<float> v;
+    for (int i=0; i<n; i++) v.push_back(histos_resampled.at(i)->GetBinContent(j));
+
+    float mean = 0;
+    for (int i=0; i<n; i++) mean += v.at(i);
+    mean /= n;
+
+    float var = 0;
+    for (int i=0; i<n; i++) var += pow(v.at(i)-mean,2);
+    var *= float(n-1)/n;
+
+    hout->SetBinContent(j,mean*n);
+    hout->SetBinError(j,sqrt(var));
+
+  }
+
+  for (int i=0; i<n; i++) delete histos_resampled.at(i);
+
+  return hout;
+
+};

@@ -32,7 +32,7 @@ TH1F* run_unfolding(RooUnfoldResponse *resp, TH1F *folded, int niterations, TH1F
   return unfolded;
 };
 
-void closure_test_unfolding(TString filename_unfmatrix="outphoton/outphoton_effunf_sig_Default.root", TString filename_foldedhisto="outphoton/outphoton_effunf_sig_Default.root", TString filename_truehisto="outphoton/outphoton_effunf_sig_Default.root", TString var="", TString splitting=""){
+void closure_test_unfolding(TString filename_unfmatrix="outphoton/outphoton_effunf_MADGRAPH_sig_Default.root", TString filename_foldedhisto="outphoton/outphoton_effunf_sig_Default.root", TString filename_truehisto="outphoton/outphoton_effunf_sig_Default.root", TString var="", TString splitting=""){
 
   gStyle->SetOptStat(0);
   if (docmsstyle) setCMSStyle();
