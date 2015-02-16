@@ -17,7 +17,7 @@ if (args.what=='sherpa'):
     pdfs = 0
 elif (args.what=='amcatnlo'):
     dir='./theory_marco'
-    files=['amcatnlo_012j_tuneCUETP8M1.root','amcatnlo_012j_tune4C.root','amcatnlo_012j_noMPI.root']
+    files=['amcatnlo_012j_tuneCUETP8M1_looseacc_pythia8_205.root','amcatnlo_012j_tune4C_looseacc_pythia8_205.root','amcatnlo_012j_noMPI_looseacc_pythia8_205.root']
     scales = 8
     pdfs = 100
 elif (args.what=='box'):
