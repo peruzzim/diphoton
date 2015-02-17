@@ -18,6 +18,8 @@ int position = 11;
 float sherpa_kfactor = 16.2/13.95;
 float amcatnlo_kfactor = 16.2/18.50;
 float gosam_kfactor = 1;
+float gosam_uecorr_central = 0.95;
+float gosam_uecorr_error = 0.05;
 
 typedef unsigned int uint;
 uint n_scalevar_amcatnlo = 8;
@@ -171,26 +173,38 @@ public:
     assert (h->GetNbinsX()==staterr->GetNbinsX());
     for (int j=0; j<h->GetNbinsX(); j++){
       staterr->SetBinContent(j+1,h->GetBinError(j+1));
-      //      cout << "bin " << j+1 << " stat err: " << staterr->GetBinContent(j+1)/central->GetBinContent(j+1) << endl;
     }
   }
 
   void AddStatErrToUpDown(){
+    AddErrToUpDown(staterr);
+  }
+
+  void AddRelErr(float relerr){
+    TH1F *adderr = (TH1F*)(central->Clone("adderr_transient"));
+    adderr->Scale(relerr);
+    AddErrToUpDown(adderr);
+  }
+
+  void AddErrToUpDown(TH1F *err){
     AssertOrdering();
     TH1F *diffup = (TH1F*)(up->Clone("diffup_transient"));
     diffup->Add(central,-1);
-    AddQuadrature(diffup,staterr);
+    AddQuadrature(diffup,err);
     diffup->Add(central,+1);
     ::RemoveErrors(diffup);
-    CopyContent(diffup,up);
     TH1F *diffdown = (TH1F*)(down->Clone("diffdown_transient"));
     diffdown->Add(central,-1);
     diffdown->Scale(-1);
-    AddQuadrature(diffdown,staterr);
+    AddQuadrature(diffdown,err);
     diffdown->Scale(-1);
     diffdown->Add(central,+1);
     ::RemoveErrors(diffdown);
+    AssertOrdering(up,diffup);
+    AssertOrdering(diffdown,down);
+    CopyContent(diffup,up);
     CopyContent(diffdown,down);
+    AssertOrdering();
   }
 
   void Scale(float x){
@@ -259,6 +273,11 @@ public:
     for (int j=0; j<central->GetNbinsX(); j++){
       assert (central->GetBinContent(j+1) >= down->GetBinContent(j+1));
       assert (central->GetBinContent(j+1) <= up->GetBinContent(j+1));
+    }
+  }
+  void AssertOrdering(TH1F *h1, TH1F *h2){
+    for (int j=0; j<h1->GetNbinsX(); j++){
+      assert (h1->GetBinContent(j+1) <= h2->GetBinContent(j+1));
     }
   }
 
@@ -350,14 +369,19 @@ void make_predictions_(TString var="", bool withdata = true){
     sherpa.down = scalevars[1];
 
     sherpa.FillStatErr(sherpa.central);
-    sherpa.AddStatErrToUpDown();
 
     std::vector<TH1F*> hscaleafter;
     hscaleafter.push_back(sherpa.central);
     hscaleafter.push_back(sherpa.up);
     hscaleafter.push_back(sherpa.down);
     hscaleafter.push_back(sherpa.staterr);
-    cout << "sherpa.central sherpa.up sherpa.down sherpa.staterr" << endl;
+
+    cout << "sherpa.central sherpa.up sherpa.down sherpa.staterr (before add staterr)" << endl;
+    PrintHistos(hscaleafter);
+
+    sherpa.AddStatErrToUpDown();
+
+    cout << "sherpa.central sherpa.up sherpa.down sherpa.staterr (after add staterr)" << endl;
     PrintHistos(hscaleafter);
 
 
@@ -518,6 +542,8 @@ void make_predictions_(TString var="", bool withdata = true){
       cout << "APPLY K-FACTOR GOSAM: " << gosam_kfactor << endl;
       gosam.Scale(gosam_kfactor);
     }
+    gosam.AddRelErr(gosam_uecorr_error);
+    gosam.Scale(gosam_uecorr_central);
     cout << "Gosam integral " << CalcIntegratedCrossSection(gosam.central,true) << " +" << CalcIntegratedCrossSection(gosam.up,true)-CalcIntegratedCrossSection(gosam.central,true) << " " << CalcIntegratedCrossSection(gosam.down,true)-CalcIntegratedCrossSection(gosam.central,true) << " pb" << endl;
     gosam.MakeGraphErrors(kGreen+2,3395);
     predictions.push_back(&gosam);
