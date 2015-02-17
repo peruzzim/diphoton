@@ -15,8 +15,8 @@ bool dolog = false;
 bool dologx = false;
 int position = 11;
 
-float sherpa_kfactor = 16.2/13.9;
-float amcatnlo_kfactor = 16.2/18.44;
+float sherpa_kfactor = 16.2/13.95;
+float amcatnlo_kfactor = 16.2/18.50;
 float gosam_kfactor = 1;
 
 typedef unsigned int uint;
@@ -171,13 +171,26 @@ public:
     assert (h->GetNbinsX()==staterr->GetNbinsX());
     for (int j=0; j<h->GetNbinsX(); j++){
       staterr->SetBinContent(j+1,h->GetBinError(j+1));
-      cout << "bin " << j+1 << " stat err: " << staterr->GetBinContent(j+1)/central->GetBinContent(j+1) << endl;
+      //      cout << "bin " << j+1 << " stat err: " << staterr->GetBinContent(j+1)/central->GetBinContent(j+1) << endl;
     }
   }
 
   void AddStatErrToUpDown(){
-    AddQuadrature(up,staterr);
-    AddQuadrature(down,staterr);
+    AssertOrdering();
+    TH1F *diffup = (TH1F*)(up->Clone("diffup_transient"));
+    diffup->Add(central,-1);
+    AddQuadrature(diffup,staterr);
+    diffup->Add(central,+1);
+    ::RemoveErrors(diffup);
+    CopyContent(diffup,up);
+    TH1F *diffdown = (TH1F*)(down->Clone("diffdown_transient"));
+    diffdown->Add(central,-1);
+    diffdown->Scale(-1);
+    AddQuadrature(diffdown,staterr);
+    diffdown->Scale(-1);
+    diffdown->Add(central,+1);
+    ::RemoveErrors(diffdown);
+    CopyContent(diffdown,down);
   }
 
   void Scale(float x){
@@ -242,6 +255,20 @@ public:
     }
   }
 
+  void AssertOrdering(){
+    for (int j=0; j<central->GetNbinsX(); j++){
+      assert (central->GetBinContent(j+1) >= down->GetBinContent(j+1));
+      assert (central->GetBinContent(j+1) <= up->GetBinContent(j+1));
+    }
+  }
+
+  void CopyContent(TH1F *from, TH1F *to){
+    for (int j=0; j<from->GetNbinsX(); j++){
+      to->SetBinContent(j+1,from->GetBinContent(j+1));
+      to->SetBinError(j+1,from->GetBinError(j+1));
+    }
+  }
+
 };
 
 void AddRatioPad(TCanvas *c, int npad, prediction &pred, TH1F *hdata, TH1F *hdatastatonly, TString diffvariable);
@@ -273,14 +300,14 @@ void make_predictions_(TString var="", bool withdata = true){
   TFile *fgosamup = 0;
   TFile *fgosamdown = 0;
   if (var.Contains("1jet_")){
-    fgosam = new TFile("theory_marco/outphoton_theory_gosam_aaj_mu1.root","read");
-    fgosamup = new TFile("theory_marco/outphoton_theory_gosam_aaj_mu2.root","read");
-    fgosamdown = new TFile("theory_marco/outphoton_theory_gosam_aaj_mu1o2.root","read");
+    fgosam = new TFile("theory_marco/outphoton_theory_gosam_aaj_mu1_jackknife.root","read");
+    fgosamup = new TFile("theory_marco/outphoton_theory_gosam_aaj_mu2_jackknife.root","read");
+    fgosamdown = new TFile("theory_marco/outphoton_theory_gosam_aaj_mu1o2_jackknife.root","read");
   }
   else if (var.Contains("2jet_")){
-    fgosam = new TFile("theory_marco/outphoton_theory_gosam_aajj_mu1.root","read");
-    fgosamup = new TFile("theory_marco/outphoton_theory_gosam_aajj_mu2.root","read");
-    fgosamdown = new TFile("theory_marco/outphoton_theory_gosam_aajj_mu1o2.root","read");
+    fgosam = new TFile("theory_marco/outphoton_theory_gosam_aajj_mu1_jackknife.root","read");
+    fgosamup = new TFile("theory_marco/outphoton_theory_gosam_aajj_mu2_jackknife.root","read");
+    fgosamdown = new TFile("theory_marco/outphoton_theory_gosam_aajj_mu1o2_jackknife.root","read");
   }
 
   for (std::vector<TString>::const_iterator it = diffvariables_list.begin(); it!=diffvariables_list.end(); it++){
@@ -481,7 +508,7 @@ void make_predictions_(TString var="", bool withdata = true){
     gosam.down = scalevars[1];
 
     gosam.FillStatErr(gosam.central);
-    //    gosam.AddStatErrToUpDown();
+    gosam.AddStatErrToUpDown();
 
     gosam.RemoveErrors();
     gosam.MakeDifferential();

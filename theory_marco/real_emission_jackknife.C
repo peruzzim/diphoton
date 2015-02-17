@@ -6,6 +6,8 @@
 #include <iostream>
 using namespace std;
 
+//#define DEBUG
+
 TH1F* JackknifammiStiHistos(std::vector<TH1F*> histos_splitted);
 
 void real_emission_jackknife(TString dir="real_aajj_splitted_for_jackknife", TString nameroot="outphoton_aajj_effunf_mu1", int N=20){
@@ -33,6 +35,9 @@ void real_emission_jackknife(TString dir="real_aajj_splitted_for_jackknife", TSt
 	out->Print();
 	outfile->cd("effunf");
 	out->Write();
+#ifdef DEBUG
+	return;
+#endif
       } 
   }
   
@@ -47,17 +52,19 @@ TH1F* JackknifammiStiHistos(std::vector<TH1F*> histos_splitted){
   int nbins = histos_splitted.at(0)->GetNbinsX();
   for (int i=0; i<n; i++) assert(nbins==histos_splitted.at(i)->GetNbinsX());
 
-  //  for (int i=0; i<n; i++) cout << "split " << i << " " << histos_splitted.at(i)->GetBinContent(1) << endl;
-//  {
-//    float m = 0;
-//    for (int i=0;i<n; i++) m+=histos_splitted.at(i)->GetBinContent(1);
-//    m/=n;
-//    float v = 0;
-//    for (int i=0;i<n; i++) v+=pow(histos_splitted.at(i)->GetBinContent(1)-m,2);
-//    v/=(n-1);
-//    v/=n;
-//    cout << m*n << " +/- " << sqrt(v)*n << endl;
-//  }
+#ifdef DEBUG
+  for (int i=0; i<n; i++) cout << "split " << i << " " << histos_splitted.at(i)->GetBinContent(1) << endl;
+  {
+    float m = 0;
+    for (int i=0;i<n; i++) m+=histos_splitted.at(i)->GetBinContent(1);
+    m/=n;
+    float v = 0;
+    for (int i=0;i<n; i++) v+=pow(histos_splitted.at(i)->GetBinContent(1)-m,2);
+    v/=(n-1);
+    v/=n;
+    cout << m*n << " +/- " << sqrt(v)*n << endl;
+  }
+#endif
 
   TH1F *hout = (TH1F*)(histos_splitted.at(0)->Clone("jackknife"));
   hout->Reset();
@@ -72,8 +79,6 @@ TH1F* JackknifammiStiHistos(std::vector<TH1F*> histos_splitted){
 
   for (int j=1; j<nbins+1; j++){
 
-    //    cout << "bin " << j << endl;
-
     std::vector<float> v;
     for (int i=0; i<n; i++) v.push_back(histos_resampled.at(i)->GetBinContent(j));
 
@@ -81,14 +86,17 @@ TH1F* JackknifammiStiHistos(std::vector<TH1F*> histos_splitted){
     for (int i=0; i<n; i++) mean += v.at(i)*n/(n-1);
     mean /= n;
 
-    //    for (int i=0; i<n; i++) cout << "est " << i << " " << v.at(i)*n/(n-1) << endl;
-    //    cout << "mean " << mean << endl;
-
     float var = 0;
     for (int i=0; i<n; i++) var += pow(v.at(i)*n/(n-1)-mean,2);
     var *= float(n-1)/n;
 
-    //    cout << "std " << sqrt(var) << endl;
+   
+#ifdef DEBUG
+    cout << "bin " << j << endl;
+    for (int i=0; i<n; i++) cout << "est " << i << " " << v.at(i)*n/(n-1) << endl;
+    cout << "mean " << mean << endl;
+    cout << "std " << sqrt(var) << endl;
+#endif
 
     hout->SetBinContent(j,mean);
     hout->SetBinError(j,sqrt(var));
