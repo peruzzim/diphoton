@@ -18,7 +18,7 @@ void setCMSStyle()
 {
 
   setTDRStyle();
-  writeExtraText = false;       // if extra text
+  writeExtraText = true;       // if extra text
   extraText  = "Preliminary";  // default extra text is "Preliminary"
   lumi_7TeV  = "5.0 fb^{-1}";  // default is "5.1 fb^{-1}"
 
@@ -47,7 +47,7 @@ void setCMSStyle()
 void addCMS(TPad *canv, int iPos = 11, int iPeriod = 1)
 { 
   if (iPos==13) {
-    relPosX=0.2;
+    relPosX=0.27;
   }
   CMS_lumi( canv, iPeriod, iPos );
   canv->Update();

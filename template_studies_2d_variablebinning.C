@@ -629,12 +629,12 @@ fit_output* fit_dataset(TString diffvariable, TString splitting, int bin, const 
     str_dset_datarcone_s.color = kGreen;
     plot_dataset_struct str_dset_datarcone_b;
     str_dset_datarcone_b.dset = dset_datarcone_b;
-    str_dset_datarcone_b.legend = "Sieie sideband in data";
+    str_dset_datarcone_b.legend = "Sideband photon in data";
     str_dset_datarcone_b.color = kGreen;
 
     plot_dataset_struct str_dset_mctrue_s;
     str_dset_mctrue_s.dset = dset_mctrue_s;
-    str_dset_mctrue_s.legend = "Photon Iso in MC";
+    str_dset_mctrue_s.legend = "Prompt photon in MC";
     str_dset_mctrue_s.color = kRed;
     plot_dataset_struct str_dset_mcrcone_s;
     str_dset_mcrcone_s.dset = dset_mcrcone_s;
@@ -671,11 +671,11 @@ fit_output* fit_dataset(TString diffvariable, TString splitting, int bin, const 
     str_dataset_bkg_axis1_2.color = kBlack;
     plot_dataset_struct str_dset_mctrue_b;
     str_dset_mctrue_b.dset = dset_mctrue_b;
-    str_dset_mctrue_b.legend = "Photon Iso in MC fakes";
+    str_dset_mctrue_b.legend = "Non-prompt photon in MC";
     str_dset_mctrue_b.color = kRed;
     plot_dataset_struct str_dset_mcrcone_b;
     str_dset_mcrcone_b.dset = dset_mcrcone_b;
-    str_dset_mcrcone_b.legend = "Sieie sideband in MC";
+    str_dset_mcrcone_b.legend = "Sideband photon in MC";
     str_dset_mcrcone_b.color = kBlue;
     plot_dataset_struct str_dset_mcrcone_b1;
     str_dset_mcrcone_b1.dset = dset_mcrcone_b1;
@@ -1390,10 +1390,10 @@ fit_output* fit_dataset(TString diffvariable, TString splitting, int bin, const 
       frame1bla->Draw();
       //    c1->GetPad(1)->SetLogy(1);
       TLegend *leg = new TLegend(0.2,0.8,0.45,0.9);
-      leg->AddEntry("data","data","lp");
-      leg->AddEntry("fit","fit","l");
-      leg->AddEntry("signal","signal comp.","l");
-      leg->AddEntry("background","background comp.","l");
+      leg->AddEntry("data","Data","lp");
+      leg->AddEntry("fit","Fit","l");
+      leg->AddEntry("signal","Signal comp.","l");
+      leg->AddEntry("background","Background comp.","l");
       leg->SetFillColor(kWhite);
       leg->Draw();
 
@@ -1432,10 +1432,10 @@ fit_output* fit_dataset(TString diffvariable, TString splitting, int bin, const 
       frame1bla->Draw();
       //    c1_ub->GetPad(1)->SetLogy(1);
       TLegend *leg = new TLegend(0.55,0.7,0.9,0.9);
-      leg->AddEntry("data","data","lp");
-      leg->AddEntry("fit","fit","l");
-      leg->AddEntry("signal","signal comp.","l");
-      leg->AddEntry("background","background comp.","l");
+      leg->AddEntry("data","Data","lp");
+      leg->AddEntry("fit","Fit","l");
+      leg->AddEntry("signal","Signal comp.","l");
+      leg->AddEntry("background","Background comp.","l");
       leg->SetFillColor(kWhite);
       leg->Draw();
       TLatex a;
@@ -1676,12 +1676,12 @@ fit_output* fit_dataset(TString diffvariable, TString splitting, int bin, const 
       bkgbkgpdf_unbinned->plotOn(frame1bla,Name("plot_bkgbkg_axis1_unbinned"),Normalization(fbkgbkg->getVal(),RooAbsPdf::Relative),LineStyle(kDashed),LineColor(kBlack));
       frame1bla->Draw();
       TLegend *leg = new TLegend(0.55,0.6,0.9,0.9);
-      leg->AddEntry("data","data","lp");
-      leg->AddEntry("fit","fit","l");
-      leg->AddEntry("plot_sigsig_axis1_unbinned","prompt-prompt","l");
-      leg->AddEntry("plot_sigbkg_axis1_unbinned","prompt-fake","l");
-      leg->AddEntry("plot_bkgsig_axis1_unbinned","fake-prompt","l");
-      leg->AddEntry("plot_bkgbkg_axis1_unbinned","fake-fake","l");
+      leg->AddEntry("data","Data","lp");
+      leg->AddEntry("fit","Fit","l");
+      leg->AddEntry("plot_sigsig_axis1_unbinned","Prompt - Prompt","l");
+      leg->AddEntry("plot_sigbkg_axis1_unbinned","Prompt - Non-prompt","l");
+      leg->AddEntry("plot_bkgsig_axis1_unbinned","Non-prompt - Prompt","l");
+      leg->AddEntry("plot_bkgbkg_axis1_unbinned","Non-prompt - Non-prompt","l");
       leg->SetFillColor(kWhite);
       leg->Draw();
     TLatex a;
@@ -1704,10 +1704,10 @@ fit_output* fit_dataset(TString diffvariable, TString splitting, int bin, const 
       TLegend *leg2 = new TLegend(0.55,0.6,0.9,0.9);
       leg2->AddEntry("data","data","lp");
       leg2->AddEntry("fit","fit","l");
-      leg2->AddEntry("plot_sigsig_axis2_unbinned","prompt-prompt","l");
-      leg2->AddEntry("plot_sigbkg_axis2_unbinned","prompt-fake","l");
-      leg2->AddEntry("plot_bkgsig_axis2_unbinned","fake-prompt","l");
-      leg2->AddEntry("plot_bkgbkg_axis2_unbinned","fake-fake","l");
+      leg2->AddEntry("plot_sigsig_axis2_unbinned","Prompt - Prompt","l");
+      leg2->AddEntry("plot_sigbkg_axis2_unbinned","Prompt - Non-prompt","l");
+      leg2->AddEntry("plot_bkgsig_axis2_unbinned","Non-prompt - Prompt","l");
+      leg2->AddEntry("plot_bkgbkg_axis2_unbinned","Non-prompt - Non-prompt","l");
       leg2->SetFillColor(kWhite);
       leg2->Draw();
       a.DrawLatex(0.58,0.55,"#splitline{CMS Internal}{#sqrt{s} = 7 TeV L = 5.0 fb^{-1}}");
@@ -1738,10 +1738,10 @@ fit_output* fit_dataset(TString diffvariable, TString splitting, int bin, const 
 	TLegend *leg = new TLegend(0.18,0.74,0.38,0.94);
 	leg->AddEntry("data","data","lp");
 	leg->AddEntry("fit","fit","l");
-	leg->AddEntry("plot_sigsig_axis1","prompt-prompt","l");
-	leg->AddEntry("plot_sigbkg_axis1","prompt-fake","l");
-	leg->AddEntry("plot_bkgsig_axis1","fake-prompt","l");
-	leg->AddEntry("plot_bkgbkg_axis1","fake-fake","l");
+	leg->AddEntry("plot_sigsig_axis1","Prompt - Prompt","l");
+	leg->AddEntry("plot_sigbkg_axis1","Prompt - Non-prompt","l");
+	leg->AddEntry("plot_bkgsig_axis1","Non-prompt - Prompt","l");
+	leg->AddEntry("plot_bkgbkg_axis1","Non-prompt - Non-prompt","l");
 	leg->SetFillColor(kWhite);
 	leg->Draw();
   
@@ -2803,7 +2803,7 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
   purity[0]->SetMinimum(0);
   purity[0]->SetMaximum(1);
   purity[0]->GetXaxis()->SetTitle(get_unit(diffvariable));
-  purity[0]->GetYaxis()->SetTitle("Purity fraction");
+  purity[0]->GetYaxis()->SetTitle("Fraction");
   purity[0]->GetXaxis()->SetLabelSize(0.038);
   purity[0]->GetXaxis()->SetTitleSize(0.038);
   purity[0]->GetXaxis()->SetTitleOffset(1.15);
@@ -2822,15 +2822,15 @@ void post_process(TString diffvariable="", TString splitting="", bool skipsystem
 
   TLegend *leg = new TLegend(0.55,0.7,0.9,0.9);
   if (sym){
-    leg->AddEntry(purity[0],"prompt - prompt","lp");
-    leg->AddEntry(purity[1],"prompt - fake","lp");
-    leg->AddEntry(purity[3],"fake - fake","lp");
+    leg->AddEntry(purity[0],"Prompt - Prompt","lp");
+    leg->AddEntry(purity[1],"Prompt - Non-prompt","lp");
+    leg->AddEntry(purity[3],"Non-prompt - Non-prompt","lp");
   }
   else {
-    leg->AddEntry(purity[0],"prompt - prompt","lp");
-    leg->AddEntry(purity[1],Form("prompt %s - fake %s",s1.Data(),s2.Data()),"lp");
-    leg->AddEntry(purity[2],Form("fake %s - prompt %s",s1.Data(),s2.Data()),"lp");
-    leg->AddEntry(purity[3],"fake - fake","lp");
+    leg->AddEntry(purity[0],"Prompt - Prompt","lp");
+    leg->AddEntry(purity[1],Form("Prompt %s - Non-prompt %s",s1.Data(),s2.Data()),"lp");
+    leg->AddEntry(purity[2],Form("Non-prompt %s - Prompt %s",s1.Data(),s2.Data()),"lp");
+    leg->AddEntry(purity[3],"Non-prompt - Non-prompt","lp");
   }
   leg->SetFillColor(kWhite);
   leg->Draw();
@@ -4052,8 +4052,11 @@ void plot_datasets_axis1(std::vector<plot_dataset_struct> dsets, TString outname
   TLatex a;
   a.SetNDC();
   a.SetTextSize(0.03);
-  if (legendup)  a.DrawLatex(0.63,0.6,"#splitline{CMS Internal}{#sqrt{s} = 7 TeV L = 5.0 fb^{-1}}");
-  else a.DrawLatex(0.63,0.85,"#splitline{CMS Internal}{#sqrt{s} = 7 TeV L = 5.0 fb^{-1}}");
+
+  addCMS(comp,33);
+
+//  if (legendup)  a.DrawLatex(0.63,0.6,"#splitline{CMS Internal}{#sqrt{s} = 7 TeV L = 5.0 fb^{-1}}");
+//  else a.DrawLatex(0.63,0.85,"#splitline{CMS Internal}{#sqrt{s} = 7 TeV L = 5.0 fb^{-1}}");
 
   comp->SaveAs(Form("%s.%s",outname.Data(),"root"));
   comp->SaveAs(Form("%s.%s",outname.Data(),"pdf"));
