@@ -640,8 +640,9 @@ void make_predictions_(TString var="", bool withdata = true){
 
       addCMS((TPad*)(c->GetPad(1)),position);
 
-      TLegend *leg = (position==11) ? new TLegend(0.7,0.6,0.9,0.9) : new TLegend(0.72,0.47,0.92,0.77);
+      TLegend *leg = (position==11) ? new TLegend(0.45,0.62,0.65,0.92) : new TLegend(0.72,0.47,0.92,0.77);
       leg->SetFillColor(kWhite);
+      leg->SetFillStyle(0);
       leg->SetBorderSize(0);
       leg->SetTextFont(10*f.fonttype+f.fontprecision);
       leg->SetTextSize(20);
