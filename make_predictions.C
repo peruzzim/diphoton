@@ -82,6 +82,9 @@ public:
   Int_t style;
   TString name;
 
+  float intup;
+  float intdown;
+
   vector<TH1F**> histos;
   vector<TGraphAsymmErrors**> grs;
 
@@ -108,6 +111,9 @@ public:
     grnoerr = 0;
     color = kBlack;
     style = 3005;
+
+    intup=0;
+    intdown=0;
 
     histos.push_back(&central);
     histos.push_back(&up);
@@ -177,6 +183,15 @@ public:
   }
 
   void AddStatErrToUpDown(){
+    intup = up->Integral()-central->Integral();
+    intdown = central->Integral()-down->Integral();
+    float errstatinteg = 0;
+    for (int i=0; i<staterr->GetNbinsX(); i++){
+      errstatinteg+=pow(staterr->GetBinContent(i+1),2);
+    }
+    errstatinteg = sqrt(errstatinteg);
+    intup = sqrt(pow(intup,2)+pow(errstatinteg,2));
+    intdown = sqrt(pow(intdown,2)+pow(errstatinteg,2));
     AddErrToUpDown(staterr);
   }
 
@@ -212,6 +227,8 @@ public:
     up->Scale(x);
     down->Scale(x);
     staterr->Scale(x);
+    intup*=x;
+    intdown*=x;
   }
 
   void MakeGraphErrors(int color=kBlack, int style=3005){
@@ -392,7 +409,7 @@ void make_predictions_(TString var="", bool withdata = true){
       cout << "APPLY K-FACTOR SHERPA: " << sherpa_kfactor << endl;
       sherpa.Scale(sherpa_kfactor);
     }
-    cout << "Sherpa integral " << CalcIntegratedCrossSection(sherpa.central,true) << " +" << CalcIntegratedCrossSection(sherpa.up,true)-CalcIntegratedCrossSection(sherpa.central,true) << " " << CalcIntegratedCrossSection(sherpa.down,true)-CalcIntegratedCrossSection(sherpa.central,true) << " pb" << endl;
+    cout << "Sherpa integral " << CalcIntegratedCrossSection(sherpa.central,true) << " +" << sherpa.intup << " -" << sherpa.intdown << " pb" << endl;
     sherpa.MakeGraphErrors(kBlue,3345);
     predictions.push_back(&sherpa);
 
@@ -494,7 +511,7 @@ void make_predictions_(TString var="", bool withdata = true){
       cout << "APPLY K-FACTOR aMC@NLO+BOX: " << amcatnlo_kfactor << endl;
       amcatnlo.Scale(amcatnlo_kfactor);
     }
-    cout << "aMC@NLO+BOX integral " << CalcIntegratedCrossSection(amcatnlo.central,true) << " +" << CalcIntegratedCrossSection(amcatnlo.up,true)-CalcIntegratedCrossSection(amcatnlo.central,true) << " " << CalcIntegratedCrossSection(amcatnlo.down,true)-CalcIntegratedCrossSection(amcatnlo.central,true) << " pb" << endl;
+    cout << "aMC@NLO+BOX integral " << CalcIntegratedCrossSection(amcatnlo.central,true) << " +" << amcatnlo.intup << " -" << amcatnlo.intdown << " pb" << endl;
     amcatnlo.MakeGraphErrors(kRed,3354);
     predictions.push_back(&amcatnlo);
     }
@@ -544,7 +561,7 @@ void make_predictions_(TString var="", bool withdata = true){
     }
     gosam.AddRelErr(gosam_uecorr_error);
     gosam.Scale(gosam_uecorr_central);
-    cout << "Gosam integral " << CalcIntegratedCrossSection(gosam.central,true) << " +" << CalcIntegratedCrossSection(gosam.up,true)-CalcIntegratedCrossSection(gosam.central,true) << " " << CalcIntegratedCrossSection(gosam.down,true)-CalcIntegratedCrossSection(gosam.central,true) << " pb" << endl;
+    cout << "Gosam integral " << CalcIntegratedCrossSection(gosam.central,true) << " +" << gosam.intup << " -" << gosam.intdown << " pb" << endl;
     gosam.MakeGraphErrors(kGreen+2,3395);
     predictions.push_back(&gosam);
     }
