@@ -189,12 +189,20 @@ const char* get_unit(TString dvar){
   if (unit!="") out.Append(Form(" (%s) ",unit.Data()));
   return out.Data();
 };
-const char* get_dsigma_unit(TString dvar){
-  TString unit = diffvariables_units_list(dvar);
-  TString out = Form("d#sigma/d%s",diffvariables_names_list(dvar).Data());
-  if (unit=="") unit="1";
-  out.Append(Form(" (pb/%s) ",unit.Data()));
-  return out.Data();
+const char* get_dsigma_unit(TString dvar, bool isnormalized=false){
+  if (!isnormalized){
+    TString unit = diffvariables_units_list(dvar);
+    TString out = Form("d#sigma/d%s",diffvariables_names_list(dvar).Data());
+    if (unit=="") unit="1";
+    out.Append(Form(" (pb/%s) ",unit.Data()));
+    return out.Data();
+  }
+  else {
+    TString unit = diffvariables_units_list(dvar);
+    TString out = Form("1/#sigma d#sigma/d%s",diffvariables_names_list(dvar).Data());
+    if (unit!="" && unit!="1") out.Append(Form(" (1/%s) ",unit.Data()));
+    return out.Data();
+  }
 };
 
 

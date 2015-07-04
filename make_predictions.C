@@ -21,6 +21,8 @@ float gosam_kfactor = 1;
 float gosam_uecorr_central = 0.95;
 float gosam_uecorr_error = 0.05;
 
+bool normalize_to_1 = true;
+
 typedef unsigned int uint;
 uint n_scalevar_amcatnlo = 8;
 uint n_pdfvar_amcatnlo = 100;
@@ -43,6 +45,7 @@ std::vector<TH1F*> GetRMSMinMaxFromNDistributions(std::vector<TH1F*> histos, TH1
 float CalcIntegratedCrossSection(TH1F* histo, bool isdifferential);
 void MakeDifferential(TH1F* histo);
 TH1F* AddInQuad(TH1F *h1, TH1F *h2);
+void ScaleHisto(TH1F *histo, float sc);
 void BringTo1(TH1F *histo);
 void BringTo1(TGraphAsymmErrors *gr);
 void RemoveErrors(TH1F *h){
@@ -409,6 +412,9 @@ void make_predictions_(TString var="", bool withdata = true){
       cout << "APPLY K-FACTOR SHERPA: " << sherpa_kfactor << endl;
       sherpa.Scale(sherpa_kfactor);
     }
+    if (normalize_to_1){
+      sherpa.Scale(1.0/CalcIntegratedCrossSection(sherpa.central,true));
+    }
     cout << "Sherpa integral " << CalcIntegratedCrossSection(sherpa.central,true) << " +" << sherpa.intup << " -" << sherpa.intdown << " pb" << endl;
     sherpa.MakeGraphErrors(kBlue,3345);
     predictions.push_back(&sherpa);
@@ -511,6 +517,9 @@ void make_predictions_(TString var="", bool withdata = true){
       cout << "APPLY K-FACTOR aMC@NLO+BOX: " << amcatnlo_kfactor << endl;
       amcatnlo.Scale(amcatnlo_kfactor);
     }
+    if (normalize_to_1){
+      amcatnlo.Scale(1.0/CalcIntegratedCrossSection(amcatnlo.central,true));
+    }
     cout << "aMC@NLO+BOX integral " << CalcIntegratedCrossSection(amcatnlo.central,true) << " +" << amcatnlo.intup << " -" << amcatnlo.intdown << " pb" << endl;
     amcatnlo.MakeGraphErrors(kRed,3354);
     predictions.push_back(&amcatnlo);
@@ -561,6 +570,9 @@ void make_predictions_(TString var="", bool withdata = true){
     }
     gosam.AddRelErr(gosam_uecorr_error);
     gosam.Scale(gosam_uecorr_central);
+    if (normalize_to_1){
+      gosam.Scale(1.0/CalcIntegratedCrossSection(gosam.central,true));
+    }
     cout << "Gosam integral " << CalcIntegratedCrossSection(gosam.central,true) << " +" << gosam.intup << " -" << gosam.intdown << " pb" << endl;
     gosam.MakeGraphErrors(kGreen+2,3395);
     predictions.push_back(&gosam);
@@ -610,7 +622,7 @@ void make_predictions_(TString var="", bool withdata = true){
 
     TString unit = diffvariables_units_list(diffvariable);
     TString xtitle = get_unit(diffvariable);
-    TString ytitle = get_dsigma_unit(diffvariable);
+    TString ytitle = get_dsigma_unit(diffvariable,normalize_to_1);
     float max = hi->GetMaximum();
 
     c->cd(1);
@@ -637,6 +649,8 @@ void make_predictions_(TString var="", bool withdata = true){
 
       TH1F *hdata = (TH1F*)(fdata->Get(Form("histo_finalxs_fortheorycomp_%s",it->Data())));
       TH1F *hdatastatonly = (TH1F*)(fdatastatonly->Get(Form("histo_finalxsstatonly_fortheorycomp_%s",it->Data())));
+      ScaleHisto(hdata,1.0/CalcIntegratedCrossSection(hdata,true));
+      ScaleHisto(hdatastatonly,1.0/CalcIntegratedCrossSection(hdatastatonly,true));
       hdatastatonly->SetMarkerStyle(20);
       hdata->SetMarkerStyle(1);
       hdata->SetFillStyle(1001);
@@ -832,6 +846,13 @@ float CalcIntegratedCrossSection(TH1F* histo, bool isdifferential){
   }
   return sum;
 
+}
+
+void ScaleHisto(TH1F *histo, float sc){
+  for (int i=0; i<histo->GetNbinsX(); i++){
+    histo->SetBinError(i+1,histo->GetBinError(i+1)*sc);
+    histo->SetBinContent(i+1,histo->GetBinContent(i+1)*sc);
+  }
 }
 
 void BringTo1(TH1F *histo){
