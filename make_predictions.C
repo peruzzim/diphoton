@@ -631,6 +631,21 @@ void make_predictions_(TString var="", bool withdata = true){
     hi->GetYaxis()->SetTitle(ytitle.Data());
     hi->GetXaxis()->SetTitle(xtitle.Data());
     hi->Draw("AXIS");
+    if (diffvariable=="njets"){
+      hi->GetXaxis()->SetBinLabel(1,"0");
+      hi->GetXaxis()->SetBinLabel(2,"1");
+      hi->GetXaxis()->SetBinLabel(3,"2");
+      hi->GetXaxis()->SetBinLabel(4,"3 or 4");
+      hi->GetXaxis()->SetTickLength(0);
+      Int_t nb = hi->GetXaxis()->GetNbins();
+      TLine *l = new TLine;
+      l->SetLineWidth(1);
+      Double_t x;
+      for (Int_t i=1; i<=nb; i++) {
+	x = hi->GetXaxis()->GetBinLowEdge(i);
+	l->DrawLine(x,hi->GetYaxis()->GetBinLowEdge(1),x,0.008*(hi->GetYaxis()->GetBinUpEdge(hi->GetYaxis()->GetNbins())-hi->GetYaxis()->GetBinLowEdge(1)));
+      }
+    }
     if (dolog) hi->GetYaxis()->UnZoom();
     if (dologx) hi->GetXaxis()->UnZoom();
     for (uint i=0; i<predictions.size(); i++){
@@ -721,7 +736,7 @@ void AddRatioPad(TCanvas *c, int npad, prediction &pred, TH1F *hdata, TH1F *hdat
   ratiostat->GetXaxis()->SetLabelSize(f.xlabelsize);
   ratiostat->GetYaxis()->SetTitleSize(f.ytitlesize);
   ratiostat->GetYaxis()->SetLabelSize(f.ylabelsize);
-  
+
   ratio->SetMarkerStyle(1);
   ratio->SetFillStyle(1001);
   ratio->SetFillColorAlpha(kBlack,0.2);
@@ -731,6 +746,21 @@ void AddRatioPad(TCanvas *c, int npad, prediction &pred, TH1F *hdata, TH1F *hdat
   ratiostat->GetYaxis()->SetRangeUser(0,3);
   //  if (diffvariable=="1jet_dR_lead_j") ratiostat->GetXaxis()->SetRangeUser(2,5.8);
   ratiostat->Draw("E1");
+  if (diffvariable=="njets"){
+    ratiostat->GetXaxis()->SetBinLabel(1,"0");
+    ratiostat->GetXaxis()->SetBinLabel(2,"1");
+    ratiostat->GetXaxis()->SetBinLabel(3,"2");
+    ratiostat->GetXaxis()->SetBinLabel(4,"3 or 4");
+    ratiostat->GetXaxis()->SetTickLength(0);
+    Int_t nb = ratiostat->GetXaxis()->GetNbins();
+    TLine *l = new TLine;
+    l->SetLineWidth(1);
+    Double_t x;
+    for (Int_t i=1; i<=nb; i++) {
+      x = ratiostat->GetXaxis()->GetBinLowEdge(i);
+      l->DrawLine(x,0,x,0.15);
+    }
+  }
   ratio->Draw("E2 same");
 //  TF1 *line = new TF1("line","1",ratio->GetXaxis()->GetXmin(),ratio->GetXaxis()->GetXmax());
 //  line->SetLineColor(kBlue);
