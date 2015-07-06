@@ -8,6 +8,7 @@
 #include "TStyle.h"
 #include "TPad.h"
 #include "TLegend.h"
+#include <vector>
 
 #include "myStyleMacro.C"
 
@@ -25,7 +26,10 @@ float gosam_kfactor = 1;
 float gosam_uecorr_central = 0.95;
 float gosam_uecorr_error = 0.05;
 
-bool normalize_to_1 = false;
+bool normalize_to_1 = true;
+bool patch_dphi_gg_jj_zerolastbin_gosam = true;
+// see below on how to calculate this number: it depends on data!
+float patch_dphi_gg_jj_zerolastbin_gosam_addscale = 5.42174334533372604e-01;
 
 typedef unsigned int uint;
 uint n_scalevar_amcatnlo = 8;
@@ -46,10 +50,11 @@ fontinfo f;
 
 std::vector<TH1F*> GetMidPointMinMaxFromNDistributions(std::vector<TH1F*> histos); // for use with CT10 and scale uncertainty
 std::vector<TH1F*> GetRMSMinMaxFromNDistributions(std::vector<TH1F*> histos, TH1F* histo_central); // for use with NNPDF
-float CalcIntegratedCrossSection(TH1F* histo, bool isdifferential);
+float CalcIntegratedCrossSection(TH1F* histo, bool isdifferential, std::vector<int> binstoskip = std::vector<int>());
 void MakeDifferential(TH1F* histo);
 TH1F* AddInQuad(TH1F *h1, TH1F *h2);
 void ScaleHisto(TH1F *histo, float sc);
+void ZeroBin(TH1F *histo, int bin);
 void BringTo1(TH1F *histo);
 void BringTo1(TGraphAsymmErrors *gr);
 void RemoveErrors(TH1F *h){
@@ -179,6 +184,13 @@ public:
     ::RemoveErrors(up);
     ::RemoveErrors(down);
     ::RemoveErrors(staterr);
+  }
+
+  void ZeroBin(int bin){
+    ::ZeroBin(central,bin);
+    ::ZeroBin(up,bin);
+    ::ZeroBin(down,bin);
+    ::ZeroBin(staterr,bin);
   }
 
   void FillStatErr(TH1F *h){
@@ -574,8 +586,14 @@ void make_predictions_(TString var="", bool withdata = true){
     }
     gosam.AddRelErr(gosam_uecorr_error);
     gosam.Scale(gosam_uecorr_central);
+    if (var=="2jet_dphi_gg_jj" && patch_dphi_gg_jj_zerolastbin_gosam){
+      gosam.ZeroBin(gosam.central->GetNbinsX());
+    }
     if (normalize_to_1){
       gosam.Scale(1.0/CalcIntegratedCrossSection(gosam.central,true));
+      if (var=="2jet_dphi_gg_jj" && patch_dphi_gg_jj_zerolastbin_gosam){
+	gosam.Scale(patch_dphi_gg_jj_zerolastbin_gosam_addscale);
+      }
     }
     cout << "Gosam integral " << CalcIntegratedCrossSection(gosam.central,true) << " +" << gosam.intup << " -" << gosam.intdown << " pb" << endl;
     gosam.MakeGraphErrors(kGreen+2,3395);
@@ -668,6 +686,10 @@ void make_predictions_(TString var="", bool withdata = true){
 
       TH1F *hdata = (TH1F*)(fdata->Get(Form("histo_finalxs_fortheorycomp_%s",it->Data())));
       TH1F *hdatastatonly = (TH1F*)(fdatastatonly->Get(Form("histo_finalxsstatonly_fortheorycomp_%s",it->Data())));
+//      // use this to calculate the addscale to use for patching the dphi_gg_jj plot
+//      std::vector<int> bex;
+//      bex.push_back(hdata->GetNbinsX());
+//      cout << CalcIntegratedCrossSection(hdata,true,bex)/CalcIntegratedCrossSection(hdata,true) << endl;
       if (normalize_to_1){
 	ScaleHisto(hdata,1.0/CalcIntegratedCrossSection(hdata,true));
 	ScaleHisto(hdatastatonly,1.0/CalcIntegratedCrossSection(hdatastatonly,true));
@@ -706,6 +728,11 @@ void make_predictions_(TString var="", bool withdata = true){
 
       for (uint i=0; i<predictions.size(); i++){
 	AddRatioPad(c,i+2,*(predictions.at(i)),hdata,hdatastatonly,diffvariable);
+      }
+
+      if (var=="2jet_dphi_gg_jj" && patch_dphi_gg_jj_zerolastbin_gosam){
+	gosam.gr->RemovePoint(gosam.central->GetNbinsX()-1);
+	gosam.grnoerr->RemovePoint(gosam.central->GetNbinsX()-1);
       }
 
       c->Update();
@@ -771,6 +798,12 @@ void AddRatioPad(TCanvas *c, int npad, prediction &pred, TH1F *hdata, TH1F *hdat
 //  TF1 *line = new TF1("line","1",ratio->GetXaxis()->GetXmin(),ratio->GetXaxis()->GetXmax());
 //  line->SetLineColor(kBlue);
 //  line->Draw("same");
+
+  if (predrel.name=="GoSam" && diffvariable=="2jet_dphi_gg_jj" && patch_dphi_gg_jj_zerolastbin_gosam){
+    predrel.gr->RemovePoint(predrel.central->GetNbinsX()-1);
+    predrel.grnoerr->RemovePoint(predrel.central->GetNbinsX()-1);
+  }
+
   predrel.gr->Draw("2 same");
   predrel.grnoerr->Draw("EP same");
   
@@ -870,12 +903,17 @@ TH1F* AddInQuad(TH1F *h1, TH1F *h2){
   return h;
 }
 
-float CalcIntegratedCrossSection(TH1F* histo, bool isdifferential){
+float CalcIntegratedCrossSection(TH1F* histo, bool isdifferential, std::vector<int> binstoskip){
 
   assert(histo);
 
   float sum = 0;
   for (int i=0; i<histo->GetNbinsX(); i++){
+    if (std::find(binstoskip.begin(),binstoskip.end(),i+1)!=binstoskip.end())
+      {
+	cout << "skipping bin " << i << endl;
+	continue;
+      }
     float b = histo->GetBinContent(i+1);
     if (isdifferential) b *= histo->GetBinWidth(i+1);
     sum += b;
@@ -889,6 +927,12 @@ void ScaleHisto(TH1F *histo, float sc){
     histo->SetBinError(i+1,histo->GetBinError(i+1)*sc);
     histo->SetBinContent(i+1,histo->GetBinContent(i+1)*sc);
   }
+}
+
+void ZeroBin(TH1F *histo, int bin){
+  assert (bin>=1 && bin<=histo->GetNbinsX());
+  histo->SetBinContent(bin,0);
+  histo->SetBinError(bin,0);
 }
 
 void BringTo1(TH1F *histo){
