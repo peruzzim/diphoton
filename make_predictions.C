@@ -15,13 +15,17 @@ bool dolog = false;
 bool dologx = false;
 int position = 11;
 
-float sherpa_kfactor = 16.2/13.95;
-float amcatnlo_kfactor = 16.2/18.50;
+// decided not to apply these k-factors during approval
+//float sherpa_kfactor = 16.2/13.95;
+//float amcatnlo_kfactor = 16.2/18.50;
+
+float sherpa_kfactor = 1;
+float amcatnlo_kfactor = 1;
 float gosam_kfactor = 1;
 float gosam_uecorr_central = 0.95;
 float gosam_uecorr_error = 0.05;
 
-bool normalize_to_1 = true;
+bool normalize_to_1 = false;
 
 typedef unsigned int uint;
 uint n_scalevar_amcatnlo = 8;
@@ -664,8 +668,10 @@ void make_predictions_(TString var="", bool withdata = true){
 
       TH1F *hdata = (TH1F*)(fdata->Get(Form("histo_finalxs_fortheorycomp_%s",it->Data())));
       TH1F *hdatastatonly = (TH1F*)(fdatastatonly->Get(Form("histo_finalxsstatonly_fortheorycomp_%s",it->Data())));
-      ScaleHisto(hdata,1.0/CalcIntegratedCrossSection(hdata,true));
-      ScaleHisto(hdatastatonly,1.0/CalcIntegratedCrossSection(hdatastatonly,true));
+      if (normalize_to_1){
+	ScaleHisto(hdata,1.0/CalcIntegratedCrossSection(hdata,true));
+	ScaleHisto(hdatastatonly,1.0/CalcIntegratedCrossSection(hdatastatonly,true));
+      }
       hdatastatonly->SetMarkerStyle(20);
       hdata->SetMarkerStyle(1);
       hdata->SetFillStyle(1001);
