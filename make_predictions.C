@@ -432,7 +432,7 @@ void make_predictions_(TString var="", bool withdata = true){
       sherpa.Scale(1.0/CalcIntegratedCrossSection(sherpa.central,true));
     }
     cout << "Sherpa integral " << CalcIntegratedCrossSection(sherpa.central,true) << " +" << sherpa.intup << " -" << sherpa.intdown << " pb" << endl;
-    sherpa.MakeGraphErrors(kBlue,3345);
+    sherpa.MakeGraphErrors(kAzure+7,3345);
     predictions.push_back(&sherpa);
 
 
@@ -596,7 +596,7 @@ void make_predictions_(TString var="", bool withdata = true){
       }
     }
     cout << "Gosam integral " << CalcIntegratedCrossSection(gosam.central,true) << " +" << gosam.intup << " -" << gosam.intdown << " pb" << endl;
-    gosam.MakeGraphErrors(kGreen+2,3395);
+    gosam.MakeGraphErrors(kGreen+1,3395);
     predictions.push_back(&gosam);
     }
 
@@ -686,10 +686,14 @@ void make_predictions_(TString var="", bool withdata = true){
 
       TH1F *hdata = (TH1F*)(fdata->Get(Form("histo_finalxs_fortheorycomp_%s",it->Data())));
       TH1F *hdatastatonly = (TH1F*)(fdatastatonly->Get(Form("histo_finalxsstatonly_fortheorycomp_%s",it->Data())));
-//      // use this to calculate the addscale to use for patching the dphi_gg_jj plot
-//      std::vector<int> bex;
-//      bex.push_back(hdata->GetNbinsX());
-//      cout << CalcIntegratedCrossSection(hdata,true,bex)/CalcIntegratedCrossSection(hdata,true) << endl;
+
+      if (diffvariable=="2jet_dphi_gg_jj"){
+	// use this to calculate the addscale to use for patching the dphi_gg_jj plot
+	std::vector<int> bex;
+	bex.push_back(hdata->GetNbinsX());
+	cout << "special norm factor for dphi (use only for that variable!!!): " << CalcIntegratedCrossSection(hdata,true,bex)/CalcIntegratedCrossSection(hdata,true) << endl;
+      }
+
       if (normalize_to_1){
 	ScaleHisto(hdata,1.0/CalcIntegratedCrossSection(hdata,true));
 	ScaleHisto(hdatastatonly,1.0/CalcIntegratedCrossSection(hdatastatonly,true));
