@@ -677,6 +677,7 @@ void make_predictions_(TString var="", bool withdata = true){
     c->Update();
     c->SaveAs( Form("theory_marco/pred_%s%s.pdf",it->Data(),lstring.Data()));
     c->SaveAs( Form("theory_marco/pred_%s%s.png",it->Data(),lstring.Data()));
+    c->SaveAs( Form("theory_marco/pred_%s%s.gif",it->Data(),lstring.Data()));
     c->SaveAs( Form("theory_marco/pred_%s%s.root",it->Data(),lstring.Data()));
 
     TFile *fdata = new TFile(Form("plots/histo_finalxs_fortheorycomp_%s.root",it->Data()),"read");
@@ -741,6 +742,8 @@ void make_predictions_(TString var="", bool withdata = true){
 
       c->Update();
       c->SaveAs( Form("theory_marco/pred_%s%s_withdata.pdf",it->Data(),lstring.Data()));
+      c->SaveAs( Form("theory_marco/pred_%s%s_withdata.png",it->Data(),lstring.Data()));
+      c->SaveAs( Form("theory_marco/pred_%s%s_withdata.gif",it->Data(),lstring.Data()));
       c->SaveAs( Form("theory_marco/pred_%s%s_withdata.root",it->Data(),lstring.Data()));
     }
 
